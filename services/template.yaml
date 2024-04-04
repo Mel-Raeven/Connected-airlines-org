@@ -1,7 +1,11 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: 'AWS::Serverless-2016-10-31'
 Resources:
-  HelloWorldFunction:
+  CustomEventBus: 
+    Type: AWS::Events::EventBus
+    Properties: 
+        Name: "CustomEventBus"
+  NameTestFunction:
     Type: AWS::Serverless::Function
     Metadata:
       BuildMethod: go1.x
