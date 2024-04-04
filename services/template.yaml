@@ -1,0 +1,16 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: 'AWS::Serverless-2016-10-31'
+Resources:
+  CustomEventBus: 
+    Type: AWS::Events::EventBus
+    Properties: 
+        Name: "CustomEventBus"
+  NameTestFunction:
+    Type: AWS::Serverless::Function
+    Metadata:
+      BuildMethod: go1.x
+    Properties:
+      CodeUri: booking/cmd/ # folder where your main program resides
+      Handler: bootstrap
+      Runtime: provided.al2023
+      Architectures: [arm64]
