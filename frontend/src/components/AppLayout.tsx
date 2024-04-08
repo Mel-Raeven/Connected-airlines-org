@@ -9,9 +9,8 @@ export function AppLayout() {
   const location = useLocation(); 
 
   
-  const getNavbarItems = () => {
+  const GetNavbarItems = () => {
     const { pathname } = location;
-    console.log(pathname)
     switch (pathname) {
       case '/home':
         return [
@@ -53,7 +52,7 @@ export function AppLayout() {
         </Group>
       </AppShell.Header>
       <AppShell.Navbar p="md">
-      {getNavbarItems()} 
+      {GetNavbarItems()} 
       </AppShell.Navbar>
     </AppShell>
   );
