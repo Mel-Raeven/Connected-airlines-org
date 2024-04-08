@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Route, Switch } from "react-router-dom"
 import '@mantine/core/styles.css';
 import Homepage from './pages/Homepage';
 import Bookings from './pages/Bookings';
+import Flights from './pages/Flights';
 
 function App() {
   return (
@@ -12,6 +13,9 @@ function App() {
       </Switch>
       <Switch>
         <Route path='/Bookings'><Bookings/></Route>
+      </Switch>
+      <Switch>
+        <Route path='/Flights'><Flights/></Route>
       </Switch>
     </Router>
   )
