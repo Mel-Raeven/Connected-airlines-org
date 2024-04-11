@@ -13,7 +13,7 @@ import {
 } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import classes from "../components/css/TableScrollArea.module.css";
-import { IconCar, IconCheck, IconPlane } from "@tabler/icons-react";
+import { IconPlane } from "@tabler/icons-react";
 
 interface Flight {
   name: string;
@@ -273,7 +273,13 @@ const AvailableFlights = () => {
         )}
         <Space h={"2rem"} />
         <Center>
-          <Button rightSection={<IconPlane size={14} />} variant="outline" color="green">Book</Button>
+          <Button
+            rightSection={<IconPlane size={14} />}
+            variant="outline"
+            color="green"
+          >
+            Book
+          </Button>
         </Center>
       </Modal>
     </Center>
