@@ -8,7 +8,8 @@ services:
       - "127.0.0.1:4566:4566"            # LocalStack Gateway
       - "127.0.0.1:4510-4559:4510-4559"  # external services port range
     environment:
-      - LOCALSTACK_AUTH_TOKEN=${ls-CIfA1217-Rija-4414-ToRA-VOtoPAfA4597}
+      # Paste your token in the brackets below!
+      - LOCALSTACK_AUTH_TOKEN=${}
       # LocalStack configuration: https://docs.localstack.cloud/references/configuration/
       - DEBUG=${DEBUG:-0}
     volumes:
