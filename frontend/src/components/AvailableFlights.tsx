@@ -1,122 +1,221 @@
 import cx from "clsx";
 import { useState } from "react";
-import { Table, ScrollArea, Center } from "@mantine/core";
+import {
+  Table,
+  ScrollArea,
+  Center,
+  Modal,
+  Text,
+  SimpleGrid,
+  Divider,
+  Button,
+  Space,
+} from "@mantine/core";
+import { useDisclosure } from "@mantine/hooks";
 import classes from "../components/css/TableScrollArea.module.css";
+import { IconCar, IconCheck, IconPlane } from "@tabler/icons-react";
 
-const data = [
+interface Flight {
+  name: string;
+  departureAirport: string;
+  departureTime: string;
+  arrivalAirport: string;
+  arrivalTime: string;
+}
+
+const airportData: { [key: string]: string } = {
+  DE: "Berlin Airport",
+  PMI: "Palma de Mallorca Airport",
+  MIA: "Miami Airport",
+  JFK: "John F. Kennedy International Airport",
+  LAX: "Los Angeles International Airport",
+  LHR: "London Heathrow Airport",
+  CDG: "Charles de Gaulle Airport",
+  ORD: "O'Hare International Airport",
+  ATL: "Hartsfield-Jackson Atlanta International Airport",
+  BKK: "Suvarnabhumi Airport",
+  AMS: "Amsterdam Airport Schiphol",
+  SIN: "Singapore Changi Airport",
+  ICN: "Incheon International Airport",
+  DXB: "Dubai International Airport",
+  IST: "Istanbul Airport",
+  FCO: "Leonardo da Vinci–Fiumicino Airport",
+  MAD: "Adolfo Suárez Madrid–Barajas Airport",
+  MUC: "Munich Airport",
+  PEK: "Beijing Capital International Airport",
+  HKG: "Hong Kong International Airport",
+  DEL: "Indira Gandhi International Airport",
+  PVG: "Shanghai Pudong International Airport",
+  SYD: "Sydney Airport",
+  MEL: "Melbourne Airport",
+};
+
+const data: Flight[] = [
   {
-    name: "Round Trip Flight 123",
-    departureArrival: "DE -> PMI",
-    dateTime: "08-04-2024 | 14:20",
+    name: "Round Trip",
+    departureAirport: "MIA",
+    departureTime: "08-04-2024 | 14:20",
+    arrivalAirport: "AMS",
+    arrivalTime: "08-04-2024 | 16:30",
   },
   {
-    name: "One Way Flight ABC",
-    departureArrival: "ABC -> XYZ",
-    dateTime: "08-04-2024 | 16:30",
+    name: "One Way Ticket",
+    departureAirport: "JFK",
+    departureTime: "08-04-2024 | 12:00",
+    arrivalAirport: "LAX",
+    arrivalTime: "08-04-2024 | 15:00",
   },
   {
-    name: "Domestic Flight XYZ",
-    departureArrival: "XYZ -> DEF",
-    dateTime: "09-04-2024 | 10:45",
-  },
-  // 20 random flights added
-  {
-    name: "Flight to Paris",
-    departureArrival: "NYC -> CDG",
-    dateTime: "10-04-2024 | 09:30",
+    name: "City Trip",
+    departureAirport: "CDG",
+    departureTime: "08-04-2024 | 09:30",
+    arrivalAirport: "LHR",
+    arrivalTime: "08-04-2024 | 11:45",
   },
   {
-    name: "Business Trip to London",
-    departureArrival: "LAX -> LHR",
-    dateTime: "11-04-2024 | 12:15",
+    name: "Round Trip",
+    departureAirport: "LAX",
+    departureTime: "09-04-2024 | 08:45",
+    arrivalAirport: "MIA",
+    arrivalTime: "09-04-2024 | 11:15",
   },
   {
-    name: "Beach Vacation",
-    departureArrival: "MIA -> HNL",
-    dateTime: "12-04-2024 | 14:00",
+    name: "One Way Ticket",
+    departureAirport: "AMS",
+    departureTime: "09-04-2024 | 13:20",
+    arrivalAirport: "SIN",
+    arrivalTime: "09-04-2024 | 05:30",
   },
   {
-    name: "City Hopping Tour",
-    departureArrival: "SFO -> JFK",
-    dateTime: "13-04-2024 | 16:45",
+    name: "City Trip",
+    departureAirport: "SYD",
+    departureTime: "10-04-2024 | 10:00",
+    arrivalAirport: "MEL",
+    arrivalTime: "10-04-2024 | 11:00",
   },
   {
-    name: "Mountain Adventure",
-    departureArrival: "DEN -> SEA",
-    dateTime: "14-04-2024 | 11:20",
+    name: "Round Trip",
+    departureAirport: "LHR",
+    departureTime: "10-04-2024 | 12:30",
+    arrivalAirport: "CDG",
+    arrivalTime: "10-04-2024 | 14:45",
   },
   {
-    name: "Island Getaway",
-    departureArrival: "ATL -> BDA",
-    dateTime: "15-04-2024 | 10:00",
+    name: "One Way Ticket",
+    departureAirport: "ORD",
+    departureTime: "11-04-2024 | 08:00",
+    arrivalAirport: "ATL",
+    arrivalTime: "11-04-2024 | 10:00",
   },
   {
-    name: "Historical Tour",
-    departureArrival: "ORD -> DCA",
-    dateTime: "16-04-2024 | 08:45",
+    name: "City Trip",
+    departureAirport: "MUC",
+    departureTime: "11-04-2024 | 13:30",
+    arrivalAirport: "MAD",
+    arrivalTime: "11-04-2024 | 15:45",
   },
   {
-    name: "Cultural Exploration",
-    departureArrival: "MCO -> MEX",
-    dateTime: "17-04-2024 | 15:10",
+    name: "Round Trip",
+    departureAirport: "SFO",
+    departureTime: "12-04-2024 | 11:00",
+    arrivalAirport: "LAX",
+    arrivalTime: "12-04-2024 | 12:30",
   },
   {
-    name: "Wildlife Safari",
-    departureArrival: "LAS -> NBO",
-    dateTime: "18-04-2024 | 13:30",
+    name: "One Way Ticket",
+    departureAirport: "DXB",
+    departureTime: "12-04-2024 | 16:00",
+    arrivalAirport: "IST",
+    arrivalTime: "12-04-2024 | 18:00",
   },
   {
-    name: "Snowy Retreat",
-    departureArrival: "JFK -> YYZ",
-    dateTime: "19-04-2024 | 17:25",
+    name: "Round Trip",
+    departureAirport: "AMS",
+    departureTime: "13-04-2024 | 08:00",
+    arrivalAirport: "CDG",
+    arrivalTime: "13-04-2024 | 09:30",
   },
   {
-    name: "Desert Expedition",
-    departureArrival: "PHX -> DXB",
-    dateTime: "20-04-2024 | 07:55",
+    name: "One Way Ticket",
+    departureAirport: "MEL",
+    departureTime: "13-04-2024 | 12:00",
+    arrivalAirport: "LAX",
+    arrivalTime: "13-04-2024 | 15:00",
   },
   {
-    name: "Coastal Cruise",
-    departureArrival: "SFO -> SYD",
-    dateTime: "21-04-2024 | 19:40",
+    name: "City Trip",
+    departureAirport: "ORD",
+    departureTime: "14-04-2024 | 09:30",
+    arrivalAirport: "ATL",
+    arrivalTime: "14-04-2024 | 11:45",
   },
   {
-    name: "Rainforest Adventure",
-    departureArrival: "IAH -> LIM",
-    dateTime: "22-04-2024 | 10:35",
+    name: "Round Trip",
+    departureAirport: "MIA",
+    departureTime: "14-04-2024 | 07:45",
+    arrivalAirport: "LAX",
+    arrivalTime: "14-04-2024 | 10:15",
   },
   {
-    name: "Wine Tasting Tour",
-    departureArrival: "SEA -> CDG",
-    dateTime: "23-04-2024 | 16:20",
+    name: "One Way Ticket",
+    departureAirport: "LHR",
+    departureTime: "15-04-2024 | 13:20",
+    arrivalAirport: "SYD",
+    arrivalTime: "15-04-2024 | 05:30",
   },
   {
-    name: "Backpacking Trip",
-    departureArrival: "DEN -> BKK",
-    dateTime: "24-04-2024 | 14:50",
+    name: "City Trip",
+    departureAirport: "CDG",
+    departureTime: "15-04-2024 | 10:00",
+    arrivalAirport: "MEL",
+    arrivalTime: "15-04-2024 | 11:00",
   },
   {
-    name: "Road Trip Across Europe",
-    departureArrival: "MIA -> AMS",
-    dateTime: "25-04-2024 | 08:00",
+    name: "Round Trip",
+    departureAirport: "MUC",
+    departureTime: "16-04-2024 | 12:30",
+    arrivalAirport: "MAD",
+    arrivalTime: "16-04-2024 | 14:45",
   },
   {
-    name: "Skiing Holiday",
-    departureArrival: "ORD -> ZRH",
-    dateTime: "26-04-2024 | 11:55",
+    name: "One Way Ticket",
+    departureAirport: "SFO",
+    departureTime: "16-04-2024 | 08:00",
+    arrivalAirport: "DXB",
+    arrivalTime: "16-04-2024 | 10:00",
+  },
+  {
+    name: "City Trip",
+    departureAirport: "DXB",
+    departureTime: "17-04-2024 | 13:30",
+    arrivalAirport: "IST",
+    arrivalTime: "17-04-2024 | 15:45",
+  },
+  {
+    name: "Round Trip",
+    departureAirport: "AMS",
+    departureTime: "17-04-2024 | 11:00",
+    arrivalAirport: "SIN",
+    arrivalTime: "17-04-2024 | 12:30",
+  },
+  {
+    name: "One Way Ticket",
+    departureAirport: "SYD",
+    departureTime: "18-04-2024 | 16:00",
+    arrivalAirport: "MEL",
+    arrivalTime: "18-04-2024 | 18:00",
   },
 ];
 
-export function AvailableFlights() {
+const AvailableFlights = () => {
   const [scrolled, setScrolled] = useState(false);
+  const [opened, { open, close }] = useDisclosure(false);
+  const [selectedFlight, setSelectedFlight] = useState<Flight | null>(null);
 
-  const rows = data.map((row) => (
-    <Table.Tr key={row.name}>
-      <Table.Td>{row.name}</Table.Td>
-      <Table.Td>{row.departureArrival}</Table.Td>
-      <Table.Td>{row.dateTime}</Table.Td>
-    </Table.Tr>
-  ));
+  const handleFlightClick = (flight: Flight) => {
+    setSelectedFlight(flight);
+    open();
+  };
 
   return (
     <Center>
@@ -124,21 +223,61 @@ export function AvailableFlights() {
         h={400}
         onScrollPositionChange={({ y }) => setScrolled(y !== 0)}
       >
-        <Table striped highlightOnHover miw={900}>
+        <Table striped highlightOnHover miw={1000}>
           <Table.Thead
             className={cx(classes.header, { [classes.scrolled]: scrolled })}
           >
             <Table.Tr>
-              <Table.Th style={{textAlign:"center"}}>Name</Table.Th>
-              <Table.Th style={{textAlign:"center"}}>Departure/Arrival</Table.Th>
-              <Table.Th style={{textAlign:"center"}}>DateTime</Table.Th>
+              <Table.Th style={{ textAlign: "center" }}>Name</Table.Th>
+              <Table.Th style={{ textAlign: "center" }}>
+                Departure/Arrival
+              </Table.Th>
+              <Table.Th style={{ textAlign: "center" }}>
+                Departure Time
+              </Table.Th>
+              <Table.Th style={{ textAlign: "center" }}>Arrival Time</Table.Th>
             </Table.Tr>
           </Table.Thead>
-          <Table.Tbody style={{textAlign:"center"}}>{rows}</Table.Tbody>
+          <Table.Tbody style={{ textAlign: "center", cursor: "pointer" }}>
+            {data.map((row, index) => (
+              <Table.Tr key={index} onClick={() => handleFlightClick(row)}>
+                <Table.Td>{row.name}</Table.Td>
+                <Table.Td>{`${row.departureAirport} -> ${row.arrivalAirport}`}</Table.Td>
+                <Table.Td>{row.departureTime}</Table.Td>
+                <Table.Td>{row.arrivalTime}</Table.Td>
+              </Table.Tr>
+            ))}
+          </Table.Tbody>
         </Table>
       </ScrollArea>
+
+      <Modal
+        onClose={close}
+        title="Flight Information"
+        opened={opened}
+        centered
+      >
+        <Divider h={"1rem"} />
+        {selectedFlight && (
+          <SimpleGrid>
+            <Text>Name: {selectedFlight.name}</Text>
+            <Text>
+              Departure Airport: {airportData[selectedFlight.departureAirport]}
+            </Text>
+            <Text>Departure Time: {selectedFlight.departureTime}</Text>
+            <Text>
+              Arrival Airport: {airportData[selectedFlight.arrivalAirport]}
+            </Text>
+            <Text>Arrival Time: {selectedFlight.arrivalTime}</Text>
+          </SimpleGrid>
+        )}
+        <Space h={"2rem"} />
+        <Center>
+          <Button rightSection={<IconPlane size={14} />} variant="outline" color="green">Book</Button>
+        </Center>
+      </Modal>
     </Center>
   );
-}
+};
 
 export default AvailableFlights;
