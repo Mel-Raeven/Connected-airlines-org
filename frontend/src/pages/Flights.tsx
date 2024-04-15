@@ -2,6 +2,7 @@ import React from "react";
 import AppLayout from "../components/AppLayout";
 import { Image, Space } from '@mantine/core';
 import AvailableFlights from "../components/AvailableFlights";
+import DestinationBar from "../components/DestinationBar";
 
 const Flights: React.FC<{}> = ({}) => {
   return (
@@ -13,6 +14,7 @@ const Flights: React.FC<{}> = ({}) => {
         src="https://wallpaperaccess.com/full/2248375.jpg"
       />
       <Space h={"2rem"}/>
+      <DestinationBar/>
       <AvailableFlights/>
     </>);
 };
