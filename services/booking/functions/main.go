@@ -2,27 +2,115 @@ package main
 
 import (
 	"context"
-	"fmt"
-
+	// "fmt"
 	"github.com/aws/aws-lambda-go/lambda"
 )
 
 type Booking struct {
-	ID        int    `json:"id"`
-	UserID    int    `json:"userId"`
-	Flight    string `json:"flight"`
-	Departure string `json:"departure"`
-	Arrival   string `json:"arrival"`
+	BookingID 		 	int       	`json:"bookingid"`
+	UserID    	     	int       	`json:"userId"`
+	Title     		 	string    	`json:"flight"`
+	ImageURL         	string    	`json:"imageUrl"`
+    BadgeText        	string    	`json:"badgeText"`
+    DepartureTime    	string    	`json:"departureTime"`
+    ArrivalTime      	string    	`json:"arrivalTime"`
+    Class            	string    	`json:"class"`
+    DepartureAirport 	string    	`json:"departureAirport"`
+    DepartureDateTime 	string 		`json:"departureDateTime"`
+    ArrivalAirport   	string    	`json:"arrivalAirport"`
+    ArrivalDateTime   	string 		`json:"arrivalDateTime"`
+    Passengers       	int       	`json:"passengers"`
+    SeatNumbers      	string    	`json:"seatNumbers"`
+    Airline          	string    	`json:"airline"`
+    Airplane         	string    	`json:"airplane"`
+    Gate             	string    	`json:"gate 1"`
+    Status           	string    	`json:"status"`
 }
 
-var bookings = []Booking{
-	{ID: 1, UserID: 1, Flight: "ABC123", Departure: "JFK", Arrival: "LAX"},
-	{ID: 2, UserID: 1, Flight: "XYZ456", Departure: "LAX", Arrival: "JFK"},
-	{ID: 3, UserID: 2, Flight: "DEF789", Departure: "SFO", Arrival: "ORD"},
+var bookings = []Booking{{
+		BookingID:         	1,
+		UserID:            	1,
+		Title:             	"Mallorca",
+		ImageURL:          	"",
+		BadgeText:         	"9 Days",
+		DepartureTime:     	"10:00 AM",
+		ArrivalTime:       	"12:00 PM",
+		Class:             	"Business",
+		DepartureAirport:  	"Airport 1",
+		DepartureDateTime: 	"13:00 1-1-2024",
+		ArrivalAirport:    	"Airport 2",
+		ArrivalDateTime:   	"15:00 1-1-2024",
+		Passengers:        	2,
+		SeatNumbers:       	"23B, 24B",
+		Airline:           	"Transavia",
+		Airplane:          	"Airbus A330-200",
+		Gate:              	"Gate 1",
+		Status:            	"Confirmed",
+	},
+	{
+		BookingID:         	2,
+		UserID:            	2,
+		Title:             	"Barcelona",
+		ImageURL:          	"",
+		BadgeText:         	"7 Days",
+		DepartureTime:     	"09:00 AM",
+		ArrivalTime:       	"11:00 AM",
+		Class:             	"Economy",
+		DepartureAirport:  	"Airport 3",
+		DepartureDateTime: 	"11:00 3-1-2024",
+		ArrivalAirport:    	"Airport 4",
+		ArrivalDateTime:   	"time.Date(2024, time.January, 3, 11, 0, 0, 0, time.UTC)",
+		Passengers:        	1,
+		SeatNumbers:       	"15C",
+		Airline:           	"Iberia",
+		Airplane:          	"Boeing 737",
+		Gate:              	"Gate 2",
+		Status:            	"Confirmed",
+	},
+    {
+		BookingID:         	3,
+		UserID:            	2,
+      	Title: 				"Paris",
+      	ImageURL: 			"",
+      	BadgeText: 			"28 Days",
+      	DepartureTime: 		"9:00 AM",
+      	ArrivalTime: 		"2:00 PM",
+      	Class: 				"Business",
+      	DepartureAirport: 	"Airport 5",
+      	DepartureDateTime: 	"10:00 1-1-2024",
+      	ArrivalAirport: 	"Airport 6",
+      	ArrivalDateTime: 	"15:00 1-1-2024",
+      	Passengers: 		3,
+      	SeatNumbers: 		"26C, 27C, 28C",
+      	Airline: 			"Air France",
+      	Airplane: 			"Airbus A380",
+      	Gate: 				"Gate 3",
+      	Status: 			"Confirmed",
+    },
+    {
+		BookingID:         	4,
+		UserID:            	2,
+      	Title: 				"London",
+      	ImageURL: 			"",
+      	BadgeText: 			"10 Days",
+      	DepartureTime: 		"11:00 AM",
+      	ArrivalTime: 		"1:00 PM",
+      	Class: 				"Economy",
+      	DepartureAirport: 	"Airport 7",
+      	DepartureDateTime: 	"12:00 1-1-2024",
+      	ArrivalAirport: 	"Airport 8",
+      	ArrivalDateTime: 	"14:00 1-1-2024",
+      	Passengers: 		1,
+      	SeatNumbers: 		"29D",
+      	Airline: 			"British Airways",
+      	Airplane: 			"Boeing 777",
+      	Gate: 				"Gate 4",
+      	Status: 			"Confirmed",
+    },
 }
 
 type MyEvent struct {
-	ID int `json:"id"`
+	ID int `json:"userId"`
 	Name string `json:"name"`
 }
 
@@ -34,34 +122,18 @@ type MyEvent struct {
 // 	return &message, nil
 // }
 
-func HandleRequest(ctx context.Context, event *MyEvent) (*string, error) {
-	return "hallo"
-	// userID, err := stconv.Atoi(request.PathParameters["UserID"])
-	// if err !=  nil {
-	// 	log.Printf("Error parsing booking ID: %v", err)
-	// 	return events.APIGatewayProxyResponse{StatusCode: http.StatusBadRequest}, nil
-	// }
-	// for _, booking := range bookings {
-	// 	if booking.UserID == userID {
-	// 		responseBody, err := json.Marshal(booking)
-	// 		if err != nil {
-	// 			log.Printf("Error marshalling JSON response: %v", err)
-	// 			return events.APIGatewayProxyResponse{StatusCode: http.StatusInternalServerError}, err
-	// 		}
-
-	// 		return events.APIGatewayProxyResponse{
-	// 			StatusCode: http.StatusOK,
-	// 			Body:       string(responseBody),
-	// 		}, nil
-	// 	}
-	// }
-
-	// return events.APIGatewayProxyResponse{StatusCode: http.StatusNotFound}, nil
+func HandleRequest(ctx context.Context, event *MyEvent) ([]Booking, error) {
+	bookinglist := []Booking{}
+	for _, booking := range bookings {
+		if booking.UserID == event.ID {
+			bookinglist = append(bookinglist, booking)
+		}
+	}
+	return bookinglist, nil
 }
 
 func main() {
 	lambda.Start(HandleRequest)
-	
 }
 
 // Router handles routing requests to the appropriate handler based on the path
