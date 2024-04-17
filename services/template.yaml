@@ -4,13 +4,57 @@ Resources:
   CustomEventBus: 
     Type: AWS::Events::EventBus
     Properties: 
-        Name: "CustomEventBus"
+      Name: "CustomEventBus"
+
   NameTestFunction:
     Type: AWS::Serverless::Function
     Metadata:
       BuildMethod: go1.x
     Properties:
-      CodeUri: booking/cmd/ # folder where your main program resides
+      CodeUri: booking/ # folder where your main program resides
       Handler: bootstrap
       Runtime: provided.al2023
       Architectures: [arm64]
+
+  APIGateway:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: Prod
+      DefinitionBody:
+        swagger: "2.0"
+        info:
+          title: "APIGateway"
+        paths:
+          /createEvent:
+            post:
+              consumes:
+                - application/json
+              produces:
+                - application/json
+              parameters: []
+              responses: {}
+              x-amazon-apigateway-integration:
+                type: aws
+                httpMethod: POST
+                uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${NameTestFunction.Arn}/invocations"
+
+  APIGatewayPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !GetAtt NameTestFunction.Arn
+      Principal: apigateway.amazonaws.com
+
+  EventRule:
+    Type: AWS::Events::Rule
+    Properties:
+      EventBusName: !Ref CustomEventBus
+      EventPattern:
+        source:
+          - "api.gateway"
+        detail-type:
+          - "API Gateway Request"
+      Targets:
+        - Arn: !GetAtt NameTestFunction.Arn
+          Id: "InvokeLambdaFunction"
+
