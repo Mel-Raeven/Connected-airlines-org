@@ -11,9 +11,9 @@ Resources:
     Metadata:
       BuildMethod: go1.x
     Properties:
-      CodeUri: booking/ # folder where your main program resides
+      CodeUri: booking/functions/ # folder where your main program resides
       Handler: bootstrap
-      Runtime: provided.al2023
+      Runtime: provided.al2
       Architectures: [arm64]
 
   APIGateway:
