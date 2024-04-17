@@ -1,0 +1,10 @@
+{
+  "id": "<required>",
+  "account": "<required>",
+  "source": "<required>",
+  "time": "<required>",
+  "region": "<required>",
+  "resources": "<required>",
+  "detail-type": "<required>",
+  "name": "<required>"
+}
