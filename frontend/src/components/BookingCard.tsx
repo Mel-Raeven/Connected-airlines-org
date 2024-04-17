@@ -1,38 +1,8 @@
 import React from "react";
-import {
-  Card,
-  Image,
-  Text,
-  Badge,
-  Button,
-  Group,
-  Divider,
-  Modal,
-} from "@mantine/core";
+import { Card, Image, Text, Badge, Button, Group, Divider, Modal } from "@mantine/core";
 import { IconZoom } from "@tabler/icons-react";
 import { useDisclosure } from "@mantine/hooks";
-
-interface Booking {
-  id: number;
-  title: string;
-  imageUrl: string;
-  badgeText: string;
-  departureAirport: string;
-  departureDateTime: string;
-  arrivalAirport: string;
-  arrivalDateTime: string;
-  passengers: number;
-  seatNumbers: string;
-  airline: string;
-  airplane: string;
-  gate: string;
-  class: string;
-  status: string;
-}
-
-interface Props {
-  booking: Booking;
-}
+import { Props } from "../interfaces/BookingInterface";
 
 const BookingCard: React.FC<Props> = ({ booking }) => {
   const [opened, { open, close }] = useDisclosure(false);
