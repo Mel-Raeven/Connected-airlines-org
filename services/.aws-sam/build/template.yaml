@@ -16,6 +16,17 @@ Resources:
       Runtime: provided.al2
       Architectures:
       - arm64
+  SearchFlightFunction:
+    Type: AWS::Serverless::Function
+    Metadata:
+      BuildMethod: go1.x
+      SamResourceId: SearchFlightFunction
+    Properties:
+      CodeUri: SearchFlightFunction
+      Handler: bootstrap
+      Runtime: provided.al2
+      Architectures:
+      - arm64
   APIGateway:
     Type: AWS::Serverless::Api
     Properties:
@@ -38,6 +49,20 @@ Resources:
                 httpMethod: POST
                 uri:
                   Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${NameTestFunction.Arn}/invocations
+                paths: null
+          /searchFlight:
+            post:
+              consumes:
+              - application/json
+              produces:
+              - application/json
+              parameters: []
+              responses: {}
+              x-amazon-apigateway-integration:
+                type: aws
+                httpMethod: POST
+                uri:
+                  Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${SearchFlightFunction.Arn}/invocations
   APIGatewayPermission:
     Type: AWS::Lambda::Permission
     Properties:
@@ -45,6 +70,15 @@ Resources:
       FunctionName:
         Fn::GetAtt:
         - NameTestFunction
+        - Arn
+      Principal: apigateway.amazonaws.com
+  APIGatewayPermissionSearchFlight:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName:
+        Fn::GetAtt:
+        - SearchFlightFunction
         - Arn
       Principal: apigateway.amazonaws.com
   EventRule:
@@ -61,5 +95,21 @@ Resources:
       - Arn:
           Fn::GetAtt:
           - NameTestFunction
+          - Arn
+        Id: InvokeLambdaFunction
+  EventRuleSearchFlight:
+    Type: AWS::Events::Rule
+    Properties:
+      EventBusName:
+        Ref: CustomEventBus
+      EventPattern:
+        source:
+        - api.gateway
+        detail-type:
+        - API Gateway Request
+      Targets:
+      - Arn:
+          Fn::GetAtt:
+          - SearchFlightFunction
           - Arn
         Id: InvokeLambdaFunction

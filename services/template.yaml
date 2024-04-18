@@ -16,6 +16,16 @@ Resources:
       Runtime: provided.al2
       Architectures: [arm64]
 
+  SearchFlightFunction:
+    Type: AWS::Serverless::Function
+    Metadata:
+      BuildMethod: go1.x
+    Properties:
+      CodeUri: flight-management/functions/ # folder where your main program resides
+      Handler: bootstrap
+      Runtime: provided.al2
+      Architectures: [arm64]
+
   APIGateway:
     Type: AWS::Serverless::Api
     Properties:
@@ -37,12 +47,33 @@ Resources:
                 type: aws
                 httpMethod: POST
                 uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${NameTestFunction.Arn}/invocations"
+                paths:
+
+          /searchFlight:
+            post:
+              consumes:
+                - application/json
+              produces:
+                - application/json
+              parameters: []
+              responses: {}
+              x-amazon-apigateway-integration:
+                type: aws
+                httpMethod: POST
+                uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${SearchFlightFunction.Arn}/invocations"
 
   APIGatewayPermission:
     Type: AWS::Lambda::Permission
     Properties:
       Action: lambda:InvokeFunction
       FunctionName: !GetAtt NameTestFunction.Arn
+      Principal: apigateway.amazonaws.com
+
+  APIGatewayPermissionSearchFlight:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !GetAtt SearchFlightFunction.Arn
       Principal: apigateway.amazonaws.com
 
   EventRule:
@@ -57,4 +88,18 @@ Resources:
       Targets:
         - Arn: !GetAtt NameTestFunction.Arn
           Id: "InvokeLambdaFunction"
+
+  EventRuleSearchFlight:
+    Type: AWS::Events::Rule
+    Properties:
+      EventBusName: !Ref CustomEventBus
+      EventPattern:
+        source:
+          - "api.gateway"
+        detail-type:
+          - "API Gateway Request"
+      Targets:
+        - Arn: !GetAtt SearchFlightFunction.Arn
+          Id: "InvokeLambdaFunction"
+          
 
