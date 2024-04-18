@@ -15,6 +15,15 @@ Resources:
       Handler: bootstrap
       Runtime: provided.al2
       Architectures: [arm64]
+  GetBookingsFunction:
+    Type: AWS::Serverless::Function
+    Metadata:
+      BuildMethod: go1.x
+    Properties:
+      CodeUri: booking/functions/ # folder where your main program resides
+      Handler: bootstrap
+      Runtime: provided.al2
+      Architectures: [arm64]
 
   APIGateway:
     Type: AWS::Serverless::Api
@@ -37,6 +46,19 @@ Resources:
                 type: aws
                 httpMethod: POST
                 uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${NameTestFunction.Arn}/invocations"
+
+          /GetBookings:
+            post:
+              consumes:
+                - application/json
+              produces:
+                - application/json
+              parameters: []
+              responses: {}
+              x-amazon-apigateway-integration:
+                type: aws
+                httpMethod: POST
+                uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${GetBookingsFunction.Arn}/invocations"
 
   APIGatewayPermission:
     Type: AWS::Lambda::Permission
