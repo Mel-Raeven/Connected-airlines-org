@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	// "fmt"
 	"github.com/aws/aws-lambda-go/lambda"
 )
 
@@ -114,13 +113,6 @@ type MyEvent struct {
 	Name string `json:"name"`
 }
 
-// func HandleRequest(ctx context.Context, event *MyEvent) (*string, error) {
-// 	if event == nil {
-// 		return nil, fmt.Errorf("received nil event")
-// 	}
-// 	message := fmt.Sprintf("Hello %s!", event.Name)
-// 	return &message, nil
-// }
 
 func HandleRequest(ctx context.Context, event *MyEvent) ([]Booking, error) {
 	bookinglist := []Booking{}
@@ -135,13 +127,3 @@ func HandleRequest(ctx context.Context, event *MyEvent) ([]Booking, error) {
 func main() {
 	lambda.Start(HandleRequest)
 }
-
-// Router handles routing requests to the appropriate handler based on the path
-// func router(ctx context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
-// 	switch request.Path {
-// 	case "/bookings/{UserID}":
-// 		return getBookings(ctx, request)
-// 	default:
-// 		return events.APIGatewayProxyResponse{StatusCode: http.StatusNotFound}, nil
-// 	}
-// }
