@@ -3,6 +3,8 @@ package main
 import (
 	"context"
 	"github.com/aws/aws-lambda-go/lambda"
+	"encoding/json"
+
 )
 
 type Booking struct {
@@ -113,15 +115,33 @@ type MyEvent struct {
 	Name string `json:"name"`
 }
 
+type response struct{
+    StatusCode 			int 				`json:"statusCode`
+    Headers           	map[string]string   `json:"headers"`
+    Body              	string          	`json:"body"`
+}
 
-func HandleRequest(ctx context.Context, event *MyEvent) ([]Booking, error) {
+func HandleRequest(ctx context.Context, event *MyEvent) (response, error) {
 	bookinglist := []Booking{}
 	for _, booking := range bookings {
 		if booking.UserID == event.ID {
 			bookinglist = append(bookinglist, booking)
 		}
 	}
-	return bookinglist, nil
+
+	Json, err := json.Marshal(bookinglist)
+        if err != nil {
+            panic(err)
+        }
+
+	return response{
+        StatusCode : 200,
+        Headers: map[string]string{
+			"Access-Control-Allow-Origin": "*",
+			"Content-Type": "application/json",
+		},
+        Body: string(Json),
+    },nil
 }
 
 func main() {

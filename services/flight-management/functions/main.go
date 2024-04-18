@@ -2,7 +2,7 @@ package main
 
 import (
 	"context"
-	"fmt"
+	"encoding/json"
 
 	"github.com/aws/aws-lambda-go/lambda"
 )
@@ -94,10 +94,28 @@ func searchFlights(criteria FlightSearchCriteria) []Flight {
 	return filteredFlights
 }
 
-func HandleRequest(ctx context.Context, event *MyEvent) ([]Flight, error) {
+type response struct{
+    StatusCode 			int 				`json:"statusCode`
+    Headers           	map[string]string   `json:"headers"`
+    Body              	string          	`json:"body"`
+}
+
+func HandleRequest(ctx context.Context, event *MyEvent) (response, error) {
 	flights := searchFlights(event.SearchCriteria)
-	fmt.Println("Number of Flights Found:", len(flights))
-	return flights, nil
+
+	Json, err := json.Marshal(flights)
+        if err != nil {
+            panic(err)
+        }
+
+	return response{
+        StatusCode : 200,
+        Headers: map[string]string{
+			"Access-Control-Allow-Origin": "*",
+			"Content-Type": "application/json",
+		},
+        Body: string(Json),
+    },nil
 }
 
 func main() {
