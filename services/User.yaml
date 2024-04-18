@@ -1,0 +1,229 @@
+Resources:
+  AdministratorGroup:
+    Type: AWS::IAM::Group
+    Properties:
+      GroupName: AdministratorGroup
+
+  AdministratorPolicy:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: AdministratorPolicy
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Action: '*'
+            Resource: '*'
+      Groups:
+        - !Ref AdministratorGroup
+
+  DeveloperGroup:
+    Type: AWS::IAM::Group
+    Properties:
+      GroupName: DeveloperGroup
+
+  DeveloperPolicy:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: DeveloperPolicy
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Action:
+              - lambda:*
+              - apigateway:*
+              - dynamodb:*
+              - logs:*
+            Resource: '*'
+      Groups:
+        - !Ref DeveloperGroup
+
+  CustomerSupportGroup:
+    Type: AWS::IAM::Group
+    Properties:
+      GroupName: CustomerSupportGroup
+
+  CustomerSupportPolicy:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: CustomerSupportPolicy
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Action:
+              - dynamodb:GetItem
+              - dynamodb:Query
+              - dynamodb:Scan
+            Resource: "arn:aws:dynamodb:*:*:table/*"
+      Groups:
+        - !Ref CustomerSupportGroup
+
+  DataAnalystGroup:
+    Type: AWS::IAM::Group
+    Properties:
+      GroupName: DataAnalystGroup
+
+  DataAnalystPolicy:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: DataAnalystPolicy
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Action:
+              - dynamodb:GetItem
+              - dynamodb:Query
+              - dynamodb:Scan
+              - s3:GetObject
+            Resource:
+              - "arn:aws:dynamodb:*:*:table/*"
+              - "arn:aws:s3:::your-bucket-name/*"
+      Groups:
+        - !Ref DataAnalystGroup
+
+  AuditorGroup:
+    Type: AWS::IAM::Group
+    Properties:
+      GroupName: AuditorGroup
+
+  AuditorPolicy:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: AuditorPolicy
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Action:
+              - cloudwatch:GetMetricData
+              - cloudwatch:GetMetricStatistics
+              - cloudwatch:ListMetrics
+              - ec2:Describe*
+              - s3:Get*
+              - s3:List*
+            Resource: "*"
+      Groups:
+        - !Ref AuditorGroup
+
+  BillingGroup:
+    Type: AWS::IAM::Group
+    Properties:
+      GroupName: BillingGroup
+
+  BillingPolicy:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: BillingPolicy
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Action:
+              - aws-portal:ViewBilling
+              - aws-portal:ViewPaymentMethods
+              - aws-portal:ViewUsage
+            Resource: "*"
+      Groups:
+        - !Ref BillingGroup
+  AdminUser:
+    Type: AWS::IAM::User
+    Properties:
+      UserName: admin_user
+      AccessKeyId: fuck gitlab
+      SecretAccessKey: fuck gitlab
+
+
+  DeveloperUser:
+    Type: AWS::IAM::User
+    Properties:
+      UserName: developer_user
+
+  SupportUser:
+    Type: AWS::IAM::User
+    Properties:
+      UserName: support_user
+
+  AnalystUser:
+    Type: AWS::IAM::User
+    Properties:
+      UserName: analyst_user
+
+  AuditorUser:
+    Type: AWS::IAM::User
+    Properties:
+      UserName: auditor_user
+
+  BillingUser:
+    Type: AWS::IAM::User
+    Properties:
+      UserName: billing_user
+
+  AdminUserToGroup:
+    Type: AWS::IAM::UserToGroupAddition
+    Properties:
+      GroupName: AdministratorGroup
+      Users:
+        - !Ref AdminUser
+
+  DeveloperUserToGroup:
+    Type: AWS::IAM::UserToGroupAddition
+    Properties:
+      GroupName: DeveloperGroup
+      Users:
+        - !Ref DeveloperUser
+
+  SupportUserToGroup:
+    Type: AWS::IAM::UserToGroupAddition
+    Properties:
+      GroupName: CustomerSupportGroup
+      Users:
+        - !Ref SupportUser
+
+  AnalystUserToGroup:
+    Type: AWS::IAM::UserToGroupAddition
+    Properties:
+      GroupName: DataAnalystGroup
+      Users:
+        - !Ref AnalystUser
+
+  AuditorUserToGroup:
+    Type: AWS::IAM::UserToGroupAddition
+    Properties:
+      GroupName: AuditorGroup
+      Users:
+        - !Ref AuditorUser
+
+  BillingUserToGroup:
+    Type: AWS::IAM::UserToGroupAddition
+    Properties:
+      GroupName: BillingGroup
+      Users:
+        - !Ref BillingUser
+
+Outputs:
+  AdministratorGroupName:
+    Description: Name of the Administrator group
+    Value: !Ref AdministratorGroup
+
+  DeveloperGroupName:
+    Description: Name of the Developer group
+    Value: !Ref DeveloperGroup
+
+  CustomerSupportGroupName:
+    Description: Name of the Customer Support group
+    Value: !Ref CustomerSupportGroup
+
+  DataAnalystGroupName:
+    Description: Name of the Data Analyst group
+    Value: !Ref DataAnalystGroup
+
+  AuditorGroupName:
+    Description: Name of the Auditor group
+    Value: !Ref AuditorGroup
+
+  BillingGroupName:
+    Description: Name of the Billing group
+    Value: !Ref BillingGroup
