@@ -1,5 +1,5 @@
-module booking
+module flight-management
 
-go 1.22.0
+go 1.22.2
 
-require github.com/aws/aws-lambda-go v1.46.0 // indirect
+require github.com/aws/aws-lambda-go v1.46.0
