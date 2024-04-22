@@ -1,6 +1,14 @@
-import { Button, Grid, NativeSelect } from "@mantine/core";
+import { Button, Center, Grid, Modal, NativeSelect } from "@mantine/core";
+import { useState } from "react";
+import { DatePicker } from "@mantine/dates";
+import { useDisclosure } from "@mantine/hooks";
+import { IconCheck } from "@tabler/icons-react";
+import { Link } from "react-router-dom";
 
 export function DestinationBar() {
+  const [value, setValue] = useState<[Date | null, Date | null]>([null, null]);
+  const [opened, { open, close }] = useDisclosure(false);
+
   return (
     <Grid p={10} align="flex-end">
       <Grid.Col span="auto">
@@ -69,8 +77,35 @@ export function DestinationBar() {
         />
       </Grid.Col>
       <Grid.Col span="auto">
-        <Button size="md">Continue</Button>
+        <Button color="orange" variant="outline" size="md" onClick={open}>
+          Choose dates
+        </Button>
       </Grid.Col>
+      <Grid.Col span="auto">
+        <Button color="orange" variant="outline" size="md">
+          Continue
+        </Button>
+      </Grid.Col>
+      <Modal
+        size="smlst"
+        opened={opened}
+        centered
+        withCloseButton={false}
+        onClose={close}
+      >
+        <DatePicker type="range" value={value} onChange={setValue} />
+        <Center>
+          <Button
+            component={Link}
+            to="/flights"
+            rightSection={<IconCheck size={14} />}
+            color="orange"
+            variant="outline"
+          >
+            Select
+          </Button>
+        </Center>
+      </Modal>
     </Grid>
   );
 }
