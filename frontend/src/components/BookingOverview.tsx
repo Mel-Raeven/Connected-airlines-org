@@ -3,7 +3,7 @@ import { Text } from '@mantine/core';
 function BookingOverview() {
   return (
     <>
-    <Text>Lol</Text>
+    <Text>bookingoverview</Text>
     </>
   );
 }
