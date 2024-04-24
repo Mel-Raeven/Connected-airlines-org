@@ -5,10 +5,6 @@ import { IconMoneybag, IconShoppingBag } from "@tabler/icons-react";
 import BookingOverview from "../components/BookingOverview";
 
 const CreateBooking: React.FC<{}> = ({}) => {
-    
- 
-  
-
   return (
     <>
       <AppLayout />
