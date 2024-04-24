@@ -5,13 +5,13 @@ Resources:
     Type: AWS::Events::EventBus
     Properties:
       Name: CustomEventBus
-  NameTestFunction:
+  GetBookingsFunction:
     Type: AWS::Serverless::Function
     Metadata:
       BuildMethod: go1.x
-      SamResourceId: NameTestFunction
+      SamResourceId: GetBookingsFunction
     Properties:
-      CodeUri: NameTestFunction
+      CodeUri: GetBookingsFunction
       Handler: bootstrap
       Runtime: provided.al2
       Architectures:
@@ -36,20 +36,6 @@ Resources:
         info:
           title: APIGateway
         paths:
-          /createEvent:
-            post:
-              consumes:
-              - application/json
-              produces:
-              - application/json
-              parameters: []
-              responses: {}
-              x-amazon-apigateway-integration:
-                type: aws
-                httpMethod: POST
-                uri:
-                  Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${NameTestFunction.Arn}/invocations
-                paths: null
           /searchFlight:
             post:
               consumes:
@@ -63,13 +49,26 @@ Resources:
                 httpMethod: POST
                 uri:
                   Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${SearchFlightFunction.Arn}/invocations
-  APIGatewayPermission:
+          /getBookings:
+            post:
+              consumes:
+              - application/json
+              produces:
+              - application/json
+              parameters: []
+              responses: {}
+              x-amazon-apigateway-integration:
+                type: aws
+                httpMethod: POST
+                uri:
+                  Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${GetBookingsFunction.Arn}/invocations
+  APIGatewayPermissionGetBookings:
     Type: AWS::Lambda::Permission
     Properties:
       Action: lambda:InvokeFunction
       FunctionName:
         Fn::GetAtt:
-        - NameTestFunction
+        - GetBookingsFunction
         - Arn
       Principal: apigateway.amazonaws.com
   APIGatewayPermissionSearchFlight:
@@ -94,22 +93,11 @@ Resources:
       Targets:
       - Arn:
           Fn::GetAtt:
-          - NameTestFunction
-          - Arn
-        Id: InvokeLambdaFunction
-  EventRuleSearchFlight:
-    Type: AWS::Events::Rule
-    Properties:
-      EventBusName:
-        Ref: CustomEventBus
-      EventPattern:
-        source:
-        - api.gateway
-        detail-type:
-        - API Gateway Request
-      Targets:
-      - Arn:
-          Fn::GetAtt:
           - SearchFlightFunction
           - Arn
-        Id: InvokeLambdaFunction
+        Id: InvokeSearchFlightFunction
+      - Arn:
+          Fn::GetAtt:
+          - GetBookingsFunction
+          - Arn
+        Id: InvokeGetBookingsFunction

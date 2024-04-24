@@ -2,13 +2,13 @@ package main
 
 import (
 	"context"
-	"fmt"
+	"encoding/json"
 
 	"github.com/aws/aws-lambda-go/lambda"
 )
 
 type Flight struct {
-    name                  string
+	name                  string
 	ExpectedDepartureTime string
 	ExpectedArrivalTime   string
 	PointOfDeparture      string
@@ -47,9 +47,9 @@ type Seat struct {
 	Number int
 }
 
-func createMockFlight(tripname string,departure, destination string) Flight {
+func createMockFlight(tripname string, departure, destination string) Flight {
 	return Flight{
-        name:                  tripname,
+		name:                  tripname,
 		ExpectedDepartureTime: "2024-04-18T08:00:00Z",
 		ExpectedArrivalTime:   "2024-04-18T11:00:00Z",
 		PointOfDeparture:      departure,
@@ -59,11 +59,11 @@ func createMockFlight(tripname string,departure, destination string) Flight {
 			Geolocation: "Some location",
 			Status:      "ready for departure",
 		},
-		Weight:       50000,
-		Pending:      false,
-		FlightCrew:   []Employee{},
-		NeedOfFuel:   10000,
-		SeatCost:     500.00,
+		Weight:     50000,
+		Pending:    false,
+		FlightCrew: []Employee{},
+		NeedOfFuel: 10000,
+		SeatCost:   500.00,
 	}
 }
 
@@ -72,21 +72,21 @@ type MyEvent struct {
 }
 
 type FlightSearchCriteria struct {
-	PointOfDeparture   string `json:"departureCity"`
-	Destination string `json:"destinationCity"`
+	PointOfDeparture string `json:"departureCity"`
+	Destination      string `json:"destinationCity"`
 }
 
 func searchFlights(criteria FlightSearchCriteria) []Flight {
 	flights := []Flight{
-		createMockFlight("Round Trip","MIA", "LAX"),
-		createMockFlight("One Way Ticket","MIA", "JFK"),
-		createMockFlight("City Trip","JFK", "LAX"),
-		createMockFlight("Round Trip","LHR", "CDG"),
+		createMockFlight("Round Trip", "MIA", "LAX"),
+		createMockFlight("One Way Ticket", "MIA", "JFK"),
+		createMockFlight("City Trip", "JFK", "LAX"),
+		createMockFlight("Round Trip", "LHR", "CDG"),
 	}
 
 	var filteredFlights []Flight
 	for _, flight := range flights {
-		if (flight.PointOfDeparture == criteria.PointOfDeparture || criteria.PointOfDeparture == "" )&&( flight.Destination == criteria.Destination || criteria.Destination == ""){
+		if (flight.PointOfDeparture == criteria.PointOfDeparture || criteria.PointOfDeparture == "") && (flight.Destination == criteria.Destination || criteria.Destination == "") {
 			filteredFlights = append(filteredFlights, flight)
 		}
 	}
@@ -94,10 +94,30 @@ func searchFlights(criteria FlightSearchCriteria) []Flight {
 	return filteredFlights
 }
 
-func HandleRequest(ctx context.Context, event *MyEvent) ([]Flight, error) {
+type response struct {
+	StatusCode int               `json:"statusCode`
+	Headers    map[string]string `json:"headers"`
+	Body       string            `json:"body"`
+}
+
+func HandleRequest(ctx context.Context, event *MyEvent) (response, error) {
 	flights := searchFlights(event.SearchCriteria)
-	fmt.Println("Number of Flights Found:", len(flights))
-	return flights, nil
+
+	Json, err := json.Marshal(flights)
+	if err != nil {
+		panic(err)
+	}
+
+	return response{
+		StatusCode: 200,
+		Headers: map[string]string{
+			"Access-Control-Allow-Origin":  "*",
+			"Access-Control-Allow-Methods": "*",
+			"Access-Control-Allow-Headers": "*",
+			"Content-Type":                 "application/json",
+		},
+		Body: string(Json),
+	}, nil
 }
 
 func main() {
