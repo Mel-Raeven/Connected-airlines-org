@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"log"
 
 	"github.com/aws/aws-lambda-go/lambda"
 )
@@ -48,6 +49,7 @@ type Seat struct {
 }
 
 func createMockFlight(tripname string, departure, destination string) Flight {
+	log.Printf("Creating mock flight: %s", tripname)
 	return Flight{
 		name:                  tripname,
 		ExpectedDepartureTime: "2024-04-18T08:00:00Z",
@@ -77,6 +79,7 @@ type FlightSearchCriteria struct {
 }
 
 func searchFlights(criteria FlightSearchCriteria) []Flight {
+	log.Printf("Searching based on list: %v", criteria)
 	flights := []Flight{
 		createMockFlight("Round Trip", "MIA", "LAX"),
 		createMockFlight("One Way Ticket", "MIA", "JFK"),
@@ -105,9 +108,13 @@ func HandleRequest(ctx context.Context, event *MyEvent) (response, error) {
 
 	Json, err := json.Marshal(flights)
 	if err != nil {
-		panic(err)
+		log.Panicf("error: %v", err)
+		return response{
+			StatusCode: 500,
+		}, err
 	}
 
+	log.Printf("Returning list of flights")
 	return response{
 		StatusCode: 200,
 		Headers: map[string]string{
