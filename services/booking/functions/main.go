@@ -111,9 +111,22 @@ var bookings = []Booking{
 	},
 }
 
+type Passenger struct {
+    Title       string `json:"title"`
+    FirstName   string `json:"firstname"`
+    LastName    string `json:"lastname"`
+    PhoneNumber string `json:"phonenumber"`
+    Email       string `json:"email"`
+}
+
 type MyEvent struct {
-	ID   int    `json:"userId"`
-	Name string `json:"name"`
+	OutboundFlightID int         `json:"OutboundFlightID"`
+    UserID           int         `json:"UserID"`
+    ReturnFlightID   int         `json:"ReturnFlightID"`
+    Passengers       []Passenger `json:"passengers"`
+    SeatNumbers      string      `json:"Seatnumbers"`
+    Class            string      `json:"Class"`
+    ExtraBaggage     int         `json:"ExtraBaggage"`
 }
 
 type response struct {
@@ -125,7 +138,7 @@ type response struct {
 func HandleRequest(ctx context.Context, event *MyEvent) (response, error) {
 	bookinglist := []Booking{}
 	for _, booking := range bookings {
-		if booking.UserID == event.ID {
+		if booking.UserID == event.UserID {
 			bookinglist = append(bookinglist, booking)
 		}
 	}
@@ -147,6 +160,17 @@ func HandleRequest(ctx context.Context, event *MyEvent) (response, error) {
 	}, nil
 }
 
+func BookFlight(ctx context.Context, event *MyEvent) (response, error) {
+	//recieve event
+	
+	//create new booking
+
+	//get create new passengers in other services
+
+	//save booking with new passengers id's 
+	
+}
+
 func main() {
-	lambda.Start(HandleRequest)
+	lambda.Start(BookFlight)
 }
