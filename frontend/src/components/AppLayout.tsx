@@ -10,6 +10,7 @@ import {
 } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import { IconMoon, IconUser } from "@tabler/icons-react";
+import { Link } from "react-router-dom";
 
 export function AppLayout() {
   const [mobileOpened, { toggle: toggleMobile }] = useDisclosure();
@@ -97,11 +98,30 @@ export function AppLayout() {
               visibleFrom="sm"
               size="sm"
             />
-            <Button key="myTrip" variant="transparent" color="orange">
-              My Trip
+            <Button
+              component={Link}
+              to="/home"
+              variant="transparent"
+              color="orange"
+            >
+              Home
             </Button>
-            <Button key="checkIn" variant="transparent" color="orange">
-              Check In
+            <Button
+              component={Link}
+              to="/bookings"
+              variant="transparent"
+              color="orange"
+            >
+              My Trips
+            </Button>
+            <Button
+              component={Link}
+              to="/flights"
+              key="checkIn"
+              variant="transparent"
+              color="orange"
+            >
+              Flights
             </Button>
             <Button key="information" variant="transparent" color="orange">
               Information

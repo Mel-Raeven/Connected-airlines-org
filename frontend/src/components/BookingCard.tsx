@@ -18,12 +18,12 @@ const BookingCard: React.FC<Props> = ({ booking }) => {
         withBorder
       >
         <Card.Section>
-          <Image src={booking.imageUrl} height={160} alt="Booking" />
+          <Image src={"https://s1.1zoom.me/big0/106/France_Autumn_Eiffel_Tower_Paris_546781_1292x1024.jpg"} height={160} alt="Booking" />
         </Card.Section>
 
         <Group justify="space-between" mt="md" mb="xs">
           <Text size="xl" fw={500}>
-            {booking.title}
+            {booking.flight}
           </Text>
           <Badge variant="outline" color="orange">
             {booking.badgeText}
@@ -76,5 +76,4 @@ const BookingCard: React.FC<Props> = ({ booking }) => {
     </div>
   );
 };
-
-export default BookingCard;
+export default BookingCard

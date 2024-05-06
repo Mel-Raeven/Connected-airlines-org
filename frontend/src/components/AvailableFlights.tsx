@@ -14,6 +14,7 @@ import {
 import { useDisclosure } from "@mantine/hooks";
 import classes from "../components/css/TableScrollArea.module.css";
 import { IconPlane } from "@tabler/icons-react";
+import {Link} from "react-router-dom"
 
 interface Flight {
   name: string;
@@ -274,6 +275,8 @@ const AvailableFlights = () => {
         <Space h={"2rem"} />
         <Center>
           <Button
+            component={Link}
+            to="/createbooking"
             rightSection={<IconPlane size={14} />}
             variant="outline"
             color="green"
