@@ -10,6 +10,7 @@ import {
 import { IconAt, IconCake, IconPhoneCall, IconUser } from "@tabler/icons-react";
 import { useForm } from "@mantine/form";
 import { DatePickerInput } from "@mantine/dates";
+import { Link } from "react-router-dom";
 
 function BookingOverview() {
   const form = useForm({
@@ -45,7 +46,7 @@ function BookingOverview() {
   for (let i = 0; i < amountOfPassengers; i++) {
     passengerForms.push(
       <SimpleGrid key={i}>
-        <Space h={"2rem"}/>
+        <Space h={"2rem"} />
         {`Passenger ${i + 1}`}
         <Input
           {...form.getInputProps(`name${i}`)}
@@ -79,9 +80,7 @@ function BookingOverview() {
   const groupedPassengerForms = [];
   for (let i = 0; i < passengerForms.length; i += 4) {
     groupedPassengerForms.push(
-      <Group key={i}>
-        {passengerForms.slice(i, i + 4)}
-      </Group>
+      <Group key={i}>{passengerForms.slice(i, i + 4)}</Group>
     );
   }
 
@@ -96,12 +95,11 @@ function BookingOverview() {
           {...form.getInputProps("amountOfPassengers")}
         />
       </Center>
+      <Center>{groupedPassengerForms}</Center>
       <Center>
-        {groupedPassengerForms}
-      </Center>
-      <Center>
-        <Space h={"5rem"}/>
-        <Button onClick={SendForm} color={"orange"} variant="outline">
+        <Space h={"5rem"} />
+        <Button component={Link}
+              to="/ConfirmBooking" onClick={SendForm} color={"orange"} variant="outline">
           Book
         </Button>
       </Center>
