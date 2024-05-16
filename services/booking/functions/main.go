@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"log"
 
 	"github.com/aws/aws-lambda-go/lambda"
 )
@@ -132,9 +133,13 @@ func HandleRequest(ctx context.Context, event *MyEvent) (response, error) {
 
 	Json, err := json.Marshal(bookinglist)
 	if err != nil {
-		panic(err)
+		log.Panicf("error: %v", err)
+		return response{
+			StatusCode: 500,
+		}, err
 	}
 
+	log.Printf("Returning list of bookings")
 	return response{
 		StatusCode: 200,
 		Headers: map[string]string{
