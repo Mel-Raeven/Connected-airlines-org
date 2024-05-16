@@ -11,7 +11,7 @@ Resources:
     Metadata:
       BuildMethod: go1.x
     Properties:
-      CodeUri: booking/functions/ # folder where your main program resides
+      CodeUri: booking/functions/ShowBookings/ # folder where your main program resides
       Handler: bootstrap
       Runtime: provided.al2
       Architectures: [arm64]
@@ -49,7 +49,21 @@ Resources:
             TableName: !Ref FlightManagementDynamoDBTable 
         - DynamoDBWritePolicy:
             TableName: !Ref FlightManagementDynamoDBTable 
-
+  
+  BookingCRUD:
+    Type: AWS::Serverless::Function
+    Metadata:
+      BuildMethod: go1.x
+    Properties:
+      CodeUri: booking/functions/BookingCRUD/ # folder where your main program resides
+      Handler: bootstrap
+      Runtime: provided.al2
+      Architectures: [arm64]
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName: !Ref FlightManagementDynamoDBTable 
+        - DynamoDBWritePolicy:
+            TableName: !Ref FlightManagementDynamoDBTable 
 
   FlightManagementDynamoDBTable:
     Type: AWS::DynamoDB::Table
