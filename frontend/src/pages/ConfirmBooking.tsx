@@ -34,9 +34,7 @@ const ConfirmBooking: React.FC<{}> = ({}) => {
           </Group>
 
           <Text size="sm" c="dimmed">
-            With Fjord Tours you can explore more of the magical fjord
-            landscapes with tours and activities on and around the fjords of
-            Norway
+              08-04-2024 | 14:20 - 18-04-2024 | 18:50
           </Text>
 
           <Button color="orange" variant="outline" fullWidth mt="md" radius="md">
