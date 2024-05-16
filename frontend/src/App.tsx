@@ -5,6 +5,7 @@ import Homepage from './pages/Homepage';
 import Bookings from './pages/Bookings';
 import Flights from './pages/Flights';
 import CreateBooking from './pages/CreateBooking';
+import ConfirmBooking from './pages/ConfirmBooking';
 
 function App() {
   return (
@@ -20,6 +21,9 @@ function App() {
       </Switch>
       <Switch>
         <Route path='/CreateBooking'><CreateBooking/></Route>
+      </Switch>
+      <Switch>
+        <Route path='/ConfirmBooking'><ConfirmBooking/></Route>
       </Switch>
       <Switch>
         <Redirect to="/Home"/>

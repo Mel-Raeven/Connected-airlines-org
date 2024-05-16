@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import axios from 'axios';
 import AppLayout from "../components/AppLayout";
 import { Center, Image, SimpleGrid } from '@mantine/core';
 import BookingCard from "../components/BookingCard";
@@ -7,23 +8,14 @@ const Bookings: React.FC<{}> = ({}) => {
   const [bookings, setBookings] = useState<any[]>([]);
 
   useEffect(() => {
-    fetch('https://wyruuznlj2.execute-api.eu-central-1.amazonaws.com/dev/getBookings', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        name: 'test',
-        userId: 2
-      }),
+    axios.post('https://wyruuznlj2.execute-api.eu-central-1.amazonaws.com/dev/getBookings', {
+      name: 'test',
+      userId: 2
     })
-    .then(response => response.json())
-    .then(data => {
-      console.log('Fetched data:', data.body); 
+    .then(response => {
       try {
-        const parsedData = JSON.parse(data.body);
+        const parsedData = JSON.parse(response.data.body);
         if (Array.isArray(parsedData)) {
-          console.log('Setting bookings:', parsedData);
           setBookings(parsedData);
         } else {
           console.error('Data is not an array:', parsedData);
@@ -34,8 +26,6 @@ const Bookings: React.FC<{}> = ({}) => {
     })
     .catch(error => console.error('Error fetching data:', error));
   }, []); 
-
-  console.log('Bookings:', bookings);
 
   return (
     <>
