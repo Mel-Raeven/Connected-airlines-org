@@ -11,6 +11,7 @@ Resources:
     Metadata:
       BuildMethod: go1.x
     Properties:
+      Role: !GetAtt GetBookingsExecutionRole.Arn
       CodeUri: booking/functions/ShowBookings/ # folder where your main program resides
       Handler: bootstrap
       Runtime: provided.al2
@@ -20,16 +21,43 @@ Resources:
             TableName: !Ref BookingDynamoDBTable
         - DynamoDBWritePolicy:
             TableName: !Ref BookingDynamoDBTable
+  
+  GetBookingsExecutionRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: 'Allow'
+            Principal:
+              Service: 'lambda.amazonaws.com'
+            Action: 'sts:AssumeRole'
+      Policies:
+        - PolicyName: 'LambdaDynamoDBPolicy'
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: 'Allow'
+                Action:
+                  - 'logs:CreateLogGroup'
+                  - 'logs:CreateLogStream'
+                  - 'logs:PutLogEvents'
+                Resource: 'arn:aws:logs:*:*:*'
+              - Effect: 'Allow'
+                Action:
+                  - 'dynamodb:Scan'
+                Resource: 
+                  - !GetAtt BookingDynamoDBTable.Arn
 
   BookingDynamoDBTable:
     Type: AWS::DynamoDB::Table
     Properties:
       TableName: "BookingDynamoDBTable"
       AttributeDefinitions:
-        - AttributeName: "BookingId"
-          AttributeType: "S"
+        - AttributeName: "BookingID"
+          AttributeType: "N"
       KeySchema:
-        - AttributeName: "BookingId"
+        - AttributeName: "BookingID"
           KeyType: "HASH"
       ProvisionedThroughput:
         ReadCapacityUnits: 5
