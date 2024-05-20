@@ -2,157 +2,73 @@ package main
 
 import (
 	"context"
-	"encoding/json"
-	"log"
+	"fmt"
+    "strconv"
+    "encoding/json"
 
 	"github.com/aws/aws-lambda-go/lambda"
+	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
+	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
+    "github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
+	"github.com/aws/aws-sdk-go/aws"
 )
 
-type Booking struct {
-	BookingID         int    `json:"bookingid"`
-	UserID            int    `json:"userId"`
-	Title             string `json:"flight"`
-	ImageURL          string `json:"imageUrl"`
-	BadgeText         string `json:"badgeText"`
-	DepartureTime     string `json:"departureTime"`
-	ArrivalTime       string `json:"arrivalTime"`
-	Class             string `json:"class"`
-	DepartureAirport  string `json:"departureAirport"`
-	DepartureDateTime string `json:"departureDateTime"`
-	ArrivalAirport    string `json:"arrivalAirport"`
-	ArrivalDateTime   string `json:"arrivalDateTime"`
-	Passengers        int    `json:"passengers"`
-	SeatNumbers       string `json:"seatNumbers"`
-	Airline           string `json:"airline"`
-	Airplane          string `json:"airplane"`
-	Gate              string `json:"gate 1"`
-	Status            string `json:"status"`
-}
-
-var bookings = []Booking{
-	{
-		BookingID:         1,
-		UserID:            1,
-		Title:             "Mallorca",
-		ImageURL:          "",
-		BadgeText:         "9 Days",
-		DepartureTime:     "10:00 AM",
-		ArrivalTime:       "12:00 PM",
-		Class:             "Business",
-		DepartureAirport:  "Airport 1",
-		DepartureDateTime: "13:00 1-1-2024",
-		ArrivalAirport:    "Airport 2",
-		ArrivalDateTime:   "15:00 1-1-2024",
-		Passengers:        2,
-		SeatNumbers:       "23B, 24B",
-		Airline:           "Transavia",
-		Airplane:          "Airbus A330-200",
-		Gate:              "Gate 1",
-		Status:            "Confirmed",
-	},
-	{
-		BookingID:         2,
-		UserID:            2,
-		Title:             "Barcelona",
-		ImageURL:          "",
-		BadgeText:         "7 Days",
-		DepartureTime:     "09:00 AM",
-		ArrivalTime:       "11:00 AM",
-		Class:             "Economy",
-		DepartureAirport:  "Airport 3",
-		DepartureDateTime: "11:00 3-1-2024",
-		ArrivalAirport:    "Airport 4",
-		ArrivalDateTime:   "15:00 1-1-2024",
-		Passengers:        1,
-		SeatNumbers:       "15C",
-		Airline:           "Iberia",
-		Airplane:          "Boeing 737",
-		Gate:              "Gate 2",
-		Status:            "Confirmed",
-	},
-	{
-		BookingID:         3,
-		UserID:            2,
-		Title:             "Paris",
-		ImageURL:          "",
-		BadgeText:         "28 Days",
-		DepartureTime:     "9:00 AM",
-		ArrivalTime:       "2:00 PM",
-		Class:             "Business",
-		DepartureAirport:  "Airport 5",
-		DepartureDateTime: "10:00 1-1-2024",
-		ArrivalAirport:    "Airport 6",
-		ArrivalDateTime:   "15:00 1-1-2024",
-		Passengers:        3,
-		SeatNumbers:       "26C, 27C, 28C",
-		Airline:           "Air France",
-		Airplane:          "Airbus A380",
-		Gate:              "Gate 3",
-		Status:            "Confirmed",
-	},
-	{
-		BookingID:         4,
-		UserID:            2,
-		Title:             "London",
-		ImageURL:          "",
-		BadgeText:         "10 Days",
-		DepartureTime:     "11:00 AM",
-		ArrivalTime:       "1:00 PM",
-		Class:             "Economy",
-		DepartureAirport:  "Airport 7",
-		DepartureDateTime: "12:00 1-1-2024",
-		ArrivalAirport:    "Airport 8",
-		ArrivalDateTime:   "14:00 1-1-2024",
-		Passengers:        1,
-		SeatNumbers:       "29D",
-		Airline:           "British Airways",
-		Airplane:          "Boeing 777",
-		Gate:              "Gate 4",
-		Status:            "Confirmed",
-	},
-}
-
-type Passenger struct {
-	Title       string `json:"title"`
-	FirstName   string `json:"firstname"`
-	LastName    string `json:"lastname"`
-	PhoneNumber string `json:"phonenumber"`
-	Email       string `json:"email"`
-}
-
-type MyEvent struct {
-	OutboundFlightID int         `json:"OutboundFlightID"`
-	UserID           int         `json:"UserID"`
-	ReturnFlightID   int         `json:"ReturnFlightID"`
-	Passengers       []Passenger `json:"passengers"`
-	SeatNumbers      string      `json:"Seatnumbers"`
-	Class            string      `json:"Class"`
-	ExtraBaggage     int         `json:"ExtraBaggage"`
-}
-
-type response struct {
-	StatusCode int               `json:"statusCode`
-	Headers    map[string]string `json:"headers"`
-	Body       string            `json:"body"`
-}
-
-func HandleRequest(ctx context.Context, event *MyEvent) (response, error) {
-	bookinglist := []Booking{}
-	for _, booking := range bookings {
-		if booking.UserID == event.UserID {
-			bookinglist = append(bookinglist, booking)
-		}
+func ReadBookingsByUserID(ctx context.Context, event *MyEvent) (response, error) {
+	//load config
+	cfg, err := config.LoadDefaultConfig(ctx)
+	if err != nil {	
+		return response{
+					StatusCode: 500,
+				}, err
 	}
 
-	Json, err := json.Marshal(bookinglist)
+	//create dynamodb client
+	client := dynamodb.NewFromConfig(cfg)
+
+	//convert the UserID into string so it can be used in the scaninput
+    strUserID := strconv.Itoa(event.UserID)
+    
+	//create scaninput that defines the conditions and tablename aswell as the expected returning fields
+	input := &dynamodb.ScanInput{
+        TableName:              aws.String("FlightManagementDynamoDBTable"),
+        FilterExpression:       aws.String("UserID = :userid"),
+        ExpressionAttributeValues: map[string]types.AttributeValue{
+            ":userid": &types.AttributeValueMemberN{Value: strUserID},
+        },
+        ProjectionExpression: aws.String("BookingID, Title, ImageURL, BadgeText, DepartureTime, ArrivalTime, Class, DepartureAirport, DepartureDatetime, ArrivalAirport,ArrivalDateTime, Passengers, SeatNumbers, Airline, Airplane, Gate, Status"),
+    }
+
+	//perform the scan
+    result, err := client.Scan(ctx, input)
+    if err != nil {
+        fmt.Printf("Couldn't scan info for user %v. Here's why: %v\n", event.UserID, err)
+        return response{
+            StatusCode: 500,
+        }, err
+    }
+
+	//create list of bookings from results
+    var bookings []Booking
+    err = attributevalue.UnmarshalListOfMaps(result.Items, &bookings)
+    if err != nil {
+        fmt.Printf("Couldn't unmarshal scan response. Here's why: %v\n", err)
+        return response{
+            StatusCode: 500,
+        }, err
+    }
+
+	//convert list to json
+    bookinglistJson, err := json.Marshal(bookings)
 	if err != nil {
-		log.Panicf("error: %v", err)
+		
 		return response{
 			StatusCode: 500,
 		}, err
 	}
 
-	log.Printf("Returning list of bookings")
+	//put converted json in response
+	fmt.Printf("Returning list of bookings")
 	return response{
 		StatusCode: 200,
 		Headers: map[string]string{
@@ -161,8 +77,14 @@ func HandleRequest(ctx context.Context, event *MyEvent) (response, error) {
 			"Access-Control-Allow-Headers": "*",
 			"Content-Type":                 "application/json",
 		},
-		Body: string(Json),
+		Body: string(bookinglistJson),
 	}, nil
+    
+}
+
+func HandleRequest(ctx context.Context, event *MyEvent) error {
+	ReadBookingsByUserID(ctx, event)
+	return nil
 }
 
 func main() {
