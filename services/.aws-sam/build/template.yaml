@@ -11,11 +11,63 @@ Resources:
       BuildMethod: go1.x
       SamResourceId: GetBookingsFunction
     Properties:
+      Role:
+        Fn::GetAtt:
+        - GetBookingsExecutionRole
+        - Arn
       CodeUri: GetBookingsFunction
       Handler: bootstrap
       Runtime: provided.al2
       Architectures:
       - arm64
+      Policies:
+      - DynamoDBReadPolicy:
+          TableName:
+            Ref: BookingDynamoDBTable
+      - DynamoDBWritePolicy:
+          TableName:
+            Ref: BookingDynamoDBTable
+  GetBookingsExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service: lambda.amazonaws.com
+          Action: sts:AssumeRole
+      Policies:
+      - PolicyName: LambdaDynamoDBPolicy
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+          - Effect: Allow
+            Action:
+            - logs:CreateLogGroup
+            - logs:CreateLogStream
+            - logs:PutLogEvents
+            Resource: arn:aws:logs:*:*:*
+          - Effect: Allow
+            Action:
+            - dynamodb:Scan
+            Resource:
+            - Fn::GetAtt:
+              - BookingDynamoDBTable
+              - Arn
+  BookingDynamoDBTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: BookingDynamoDBTable
+      AttributeDefinitions:
+      - AttributeName: BookingID
+        AttributeType: N
+      KeySchema:
+      - AttributeName: BookingID
+        KeyType: HASH
+      ProvisionedThroughput:
+        ReadCapacityUnits: 5
+        WriteCapacityUnits: 5
   SearchFlightFunction:
     Type: AWS::Serverless::Function
     Metadata:
@@ -27,6 +79,44 @@ Resources:
       Runtime: provided.al2
       Architectures:
       - arm64
+      Policies:
+      - DynamoDBReadPolicy:
+          TableName:
+            Ref: FlightManagementDynamoDBTable
+      - DynamoDBWritePolicy:
+          TableName:
+            Ref: FlightManagementDynamoDBTable
+  BookingCRUD:
+    Type: AWS::Serverless::Function
+    Metadata:
+      BuildMethod: go1.x
+      SamResourceId: BookingCRUD
+    Properties:
+      CodeUri: BookingCRUD
+      Handler: bootstrap
+      Runtime: provided.al2
+      Architectures:
+      - arm64
+      Policies:
+      - DynamoDBReadPolicy:
+          TableName:
+            Ref: FlightManagementDynamoDBTable
+      - DynamoDBWritePolicy:
+          TableName:
+            Ref: FlightManagementDynamoDBTable
+  FlightManagementDynamoDBTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: FlightManagementDynamoDBTable
+      AttributeDefinitions:
+      - AttributeName: FlightId
+        AttributeType: S
+      KeySchema:
+      - AttributeName: FlightId
+        KeyType: HASH
+      ProvisionedThroughput:
+        ReadCapacityUnits: 5
+        WriteCapacityUnits: 5
   APIGateway:
     Type: AWS::Serverless::Api
     Properties:
@@ -62,6 +152,49 @@ Resources:
                 httpMethod: POST
                 uri:
                   Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${GetBookingsFunction.Arn}/invocations
+  ConnectedAirlinesUserPool:
+    Type: AWS::Cognito::UserPool
+    Properties:
+      UserPoolName: ConnectedAirlinesUserPool
+      Policies:
+        PasswordPolicy:
+          RequireLowercase: true
+          RequireSymbols: false
+          RequireNumbers: true
+          MinimumLength: '8'
+          RequireUppercase: true
+      UsernameAttributes:
+      - email
+      Schema:
+      - AttributeDataType: String
+        Name: email
+        Required: false
+      AutoVerifiedAttributes:
+      - email
+  ConnectedAirlinesUserPoolDomain:
+    Type: AWS::Cognito::UserPoolDomain
+    Properties:
+      UserPoolId:
+        Ref: ConnectedAirlinesUserPool
+      Domain: connectedairlines
+  ConnectedAirlinesUserClient:
+    Type: AWS::Cognito::UserPoolClient
+    Properties:
+      UserPoolId:
+        Ref: ConnectedAirlinesUserPool
+      ClientName: ConnectedAirlinesUserClient
+      GenerateSecret: false
+      AllowedOAuthFlowsUserPoolClient: true
+      AllowedOAuthFlows:
+      - code
+      CallbackURLs:
+      - https://dev.d3vyzw80s24mm5.amplifyapp.com/Home
+      SupportedIdentityProviders:
+      - COGNITO
+      AllowedOAuthScopes:
+      - phone
+      - email
+      - openid
   APIGatewayPermissionGetBookings:
     Type: AWS::Lambda::Permission
     Properties:

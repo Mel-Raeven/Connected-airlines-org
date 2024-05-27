@@ -1,0 +1,23 @@
+{
+	"OutboundFlightID":	1,
+	"UserID":           2,
+	"ReturnFlightID":	3,
+	"passengers":		[
+		{
+			"title": 		"mr", 
+			"firstname": 	"gert", 
+			"lastname": 	"bomboclat",
+			"phonenumber": 	"+3106123456",
+			"email":		"mail@mail.nl"
+		}, 
+		{
+			"title": 		"ms", 
+			"firstname": 	"gerda", 
+			"lastname":		"bomboclat",
+			"phonenumber": 	"+3106123456",
+			"email":		"mail@mail.nl"
+		}],
+	"Seatnumbers":		"29D",
+	"Class": 			"Economy",
+	"ExtraBaggage": 	1
+}
