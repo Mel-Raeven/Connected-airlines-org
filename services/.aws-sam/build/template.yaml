@@ -152,6 +152,47 @@ Resources:
                 httpMethod: POST
                 uri:
                   Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${GetBookingsFunction.Arn}/invocations
+  ExternalAPIGateway:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: Prod
+      DefinitionBody:
+        swagger: '2.0'
+        info:
+          title: ExternalAPIGateway
+        paths:
+          /postFlight:
+            post:
+              consumes:
+              - application/json
+              produces:
+              - application/json
+              parameters: []
+              responses: {}
+              x-amazon-apigateway-integration:
+                type: aws
+                httpMethod: POST
+                uri:
+                  Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${SearchFlightFunction.Arn}/invocations
+          /flightPosted:
+            post:
+              consumes:
+              - application/json
+              produces:
+              - application/json
+              parameters: []
+              responses: {}
+              x-amazon-apigateway-integration:
+                type: aws
+                httpMethod: POST
+                uri:
+                  Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${SearchFlightFunction.Arn}/invocations
+  ApiKey:
+    Type: AWS::ApiGateway::ApiKey
+    Properties:
+      Description: API key for other connectedairlines group
+      Name: ExternalConnectedAirlineKey
+      Enabled: true
   ConnectedAirlinesUserPool:
     Type: AWS::Cognito::UserPool
     Properties:
@@ -195,6 +236,17 @@ Resources:
       - phone
       - email
       - openid
+  UserPoolUICustomization:
+    Type: AWS::Cognito::UserPoolUICustomizationAttachment
+    Properties:
+      UserPoolId:
+        Ref: ConnectedAirlinesUserPool
+      ClientId:
+        Ref: ConnectedAirlinesUserClient
+      CSS: '.banner-customizable {background: orange;} .submitButton-customizable
+        {background-color: white; color: orange; border: 1px solid orange; font-weight:
+        bold;} .submitButton-customizable:hover { background-color: #f4f1ed; color:
+        orange; border: 1px solid orange; font-weight: bold;}'
   APIGatewayPermissionGetBookings:
     Type: AWS::Lambda::Permission
     Properties:
