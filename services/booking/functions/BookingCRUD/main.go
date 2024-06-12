@@ -41,9 +41,9 @@ func CreateBooking(ctx context.Context, event *MyEvent) error {
 	return nil
 }
 
-func HandleRequest(ctx context.Context, event *MyEvent) error {
-	CreateBooking(ctx, event)
-	return nil
+func HandleRequest(ctx context.Context, event *MyEvent)  error {
+	
+	return CreateBooking(ctx, event)
 }
 
 func main() {

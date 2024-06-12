@@ -123,8 +123,9 @@ export function AppLayout() {
             >
               Flights
             </Button>
-            <Button key="information" variant="transparent" color="orange">
-              Information
+            <Button component={Link}
+              to="/TrackFlight"  variant="transparent" color="orange">
+              FlightTracking
             </Button>
           </Group>
           <Group>

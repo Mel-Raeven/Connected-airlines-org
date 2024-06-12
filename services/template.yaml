@@ -106,6 +106,66 @@ Resources:
       ProvisionedThroughput:
         ReadCapacityUnits: 5
         WriteCapacityUnits: 5
+
+  GetFlightTrackingDataFunction: 
+    Type: AWS::Serverless::Function
+    Metadata:
+      BuildMethod: go1.x
+    Properties:
+      CodeUri: flight-tracking/functions/Flighttracking-Scan/ 
+      Handler: bootstrap
+      Runtime: provided.al2
+      Architectures: [arm64]
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName: !Ref FlightTrackingDynamoDBTable
+        - DynamoDBWritePolicy:
+            TableName: !Ref FlightTrackingDynamoDBTable
+
+  GenerateFlightDataFunction: 
+    Type: AWS::Serverless::Function
+    Metadata:
+      BuildMethod: go1.x
+    Properties:
+      CodeUri: flight-tracking/functions/Flighttracking/ 
+      Handler: bootstrap
+      Runtime: provided.al2
+      Architectures: [arm64]
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName: !Ref FlightTrackingDynamoDBTable
+        - DynamoDBWritePolicy:
+            TableName: !Ref FlightTrackingDynamoDBTable
+
+  GetOneFlightTrackingDataByIdFunction: 
+    Type: AWS::Serverless::Function
+    Metadata:
+      BuildMethod: go1.x
+    Properties:
+      CodeUri: flight-tracking/functions/FlighttrackingById/ 
+      Handler: bootstrap
+      Runtime: provided.al2
+      Architectures: [arm64]
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName: !Ref FlightTrackingDynamoDBTable
+        - DynamoDBWritePolicy:
+            TableName: !Ref FlightTrackingDynamoDBTable
+            
+  FlightTrackingDynamoDBTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: "FlightTrackingDynamoDBTable"
+      AttributeDefinitions:
+        - AttributeName: "FlightId"
+          AttributeType: "S"
+      KeySchema:
+        - AttributeName: "FlightId"
+          KeyType: "HASH"
+      ProvisionedThroughput:
+        ReadCapacityUnits: 5
+        WriteCapacityUnits: 5
+
   
   APIGateway:
     Type: AWS::Serverless::Api
@@ -304,3 +364,10 @@ Resources:
           Id: "InvokeSearchFlightFunction"
         - Arn: !GetAtt GetBookingsFunction.Arn
           Id: "InvokeGetBookingsFunction"
+        - Arn: !GetAtt GetFlightTrackingDataFunction.Arn
+          Id: "InvokeGetFlightTrackingDataFunction"
+        - Arn: !GetAtt GenerateFlightDataFunction.Arn
+          Id: "InvokeGenerateFlightDataFunction"
+        - Arn: !GetAtt GetOneFlightTrackingDataById.Arn
+          Id: "InvokeGetOneFlightTrackingDataById"
+          
