@@ -37,4 +37,64 @@ functions = ["GetBookingsFunction"]
 [function_build_definitions.96d8069a-74a0-4830-a926-d63ee4564501.metadata]
 BuildMethod = "go1.x"
 
+[function_build_definitions.d3f4689d-1269-4628-8a2c-49d3b38b0f3f]
+codeuri = "/home/anon/Repos/Connected-airlines-org/services/flight-tracking/functions/Flighttracking-Scan"
+runtime = "provided.al2"
+architecture = "arm64"
+handler = "bootstrap"
+manifest_hash = ""
+packagetype = "Zip"
+functions = ["GetFlightTrackingDataFunction"]
+
+[function_build_definitions.d3f4689d-1269-4628-8a2c-49d3b38b0f3f.metadata]
+BuildMethod = "go1.x"
+
+[function_build_definitions.97778a5d-9049-4983-869a-96d20354fcc6]
+codeuri = "/home/anon/Repos/Connected-airlines-org/services/flight-tracking/functions/Flighttracking"
+runtime = "provided.al2"
+architecture = "arm64"
+handler = "bootstrap"
+manifest_hash = ""
+packagetype = "Zip"
+functions = ["GenerateFlightDataFunction"]
+
+[function_build_definitions.97778a5d-9049-4983-869a-96d20354fcc6.metadata]
+BuildMethod = "go1.x"
+
+[function_build_definitions.12299d35-2d54-41b5-9715-3c516dd9ea8a]
+codeuri = "/home/anon/Repos/Connected-airlines-org/services/external/functions/ReceiveBooking"
+runtime = "provided.al2"
+architecture = "arm64"
+handler = "bootstrap"
+manifest_hash = ""
+packagetype = "Zip"
+functions = ["ReceiveBookingFunction"]
+
+[function_build_definitions.12299d35-2d54-41b5-9715-3c516dd9ea8a.metadata]
+BuildMethod = "go1.x"
+
+[function_build_definitions.a05d9aba-d63a-4d9f-9fa1-4ecade7abd63]
+codeuri = "/home/anon/Repos/Connected-airlines-org/services/flight-tracking/functions/FlightTrackingById"
+runtime = "provided.al2"
+architecture = "arm64"
+handler = "bootstrap"
+manifest_hash = ""
+packagetype = "Zip"
+functions = ["GetOneFlightTrackingDataByIdFunction"]
+
+[function_build_definitions.a05d9aba-d63a-4d9f-9fa1-4ecade7abd63.metadata]
+BuildMethod = "go1.x"
+
+[function_build_definitions.1dad2249-fba6-48f0-9f5c-e87dc04a0597]
+codeuri = "/home/anon/Repos/Connected-airlines-org/services/user/ForgetUser"
+runtime = "provided.al2"
+architecture = "arm64"
+handler = "bootstrap"
+manifest_hash = ""
+packagetype = "Zip"
+functions = ["ForgetUserFunction"]
+
+[function_build_definitions.1dad2249-fba6-48f0-9f5c-e87dc04a0597.metadata]
+BuildMethod = "go1.x"
+
 [layer_build_definitions]

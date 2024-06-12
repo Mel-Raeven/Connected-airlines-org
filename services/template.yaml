@@ -142,7 +142,7 @@ Resources:
     Metadata:
       BuildMethod: go1.x
     Properties:
-      CodeUri: flight-tracking/functions/FlighttrackingById/ 
+      CodeUri: flight-tracking/functions/FlightTrackingById/ 
       Handler: bootstrap
       Runtime: provided.al2
       Architectures: [arm64]
@@ -166,7 +166,36 @@ Resources:
         ReadCapacityUnits: 5
         WriteCapacityUnits: 5
 
-  
+  ReceiveBookingFunction:
+    Type: AWS::Serverless::Function
+    Metadata:
+      BuildMethod: go1.x
+    Properties:
+      CodeUri: external/functions/ReceiveBooking/ 
+      Handler: bootstrap
+      Runtime: provided.al2
+      Architectures: [arm64]
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName: !Ref ReceiveBookingDynamoDBTable
+        - DynamoDBWritePolicy:
+            TableName: !Ref ReceiveBookingDynamoDBTable
+ 
+  ReceiveBookingDynamoDBTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: "ReceiveBookingDynamoDBTable"
+      AttributeDefinitions:
+        - AttributeName: "GUID"
+          AttributeType: "S"
+      KeySchema:
+        - AttributeName: "GUID"
+          KeyType: "HASH"
+      ProvisionedThroughput:
+        ReadCapacityUnits: 5
+        WriteCapacityUnits: 5
+
+
   APIGateway:
     Type: AWS::Serverless::Api
     Properties:
@@ -295,6 +324,7 @@ Resources:
 
 
   ForgetUserFunction:
+    Type: 'AWS::Serverless::Function'
     Metadata:
       BuildMethod: go1.x
     Properties:
@@ -303,7 +333,7 @@ Resources:
       Handler: bootstrap
       Runtime: provided.al2
       Architectures: [arm64]
-      Role: !GetAtt 
+      Role: !GetAtt ForgetUserFunctionRole.Arn 
 
   ForgetUserFunctionRole:
     Type: 'AWS::IAM::Role'
@@ -368,6 +398,6 @@ Resources:
           Id: "InvokeGetFlightTrackingDataFunction"
         - Arn: !GetAtt GenerateFlightDataFunction.Arn
           Id: "InvokeGenerateFlightDataFunction"
-        - Arn: !GetAtt GetOneFlightTrackingDataById.Arn
-          Id: "InvokeGetOneFlightTrackingDataById"
+        - Arn: !GetAtt GetOneFlightTrackingDataByIdFunction.Arn
+          Id: "InvokeGetOneFlightTrackingDataByIdFunction"
           

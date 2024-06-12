@@ -117,6 +117,104 @@ Resources:
       ProvisionedThroughput:
         ReadCapacityUnits: 5
         WriteCapacityUnits: 5
+  GetFlightTrackingDataFunction:
+    Type: AWS::Serverless::Function
+    Metadata:
+      BuildMethod: go1.x
+      SamResourceId: GetFlightTrackingDataFunction
+    Properties:
+      CodeUri: GetFlightTrackingDataFunction
+      Handler: bootstrap
+      Runtime: provided.al2
+      Architectures:
+      - arm64
+      Policies:
+      - DynamoDBReadPolicy:
+          TableName:
+            Ref: FlightTrackingDynamoDBTable
+      - DynamoDBWritePolicy:
+          TableName:
+            Ref: FlightTrackingDynamoDBTable
+  GenerateFlightDataFunction:
+    Type: AWS::Serverless::Function
+    Metadata:
+      BuildMethod: go1.x
+      SamResourceId: GenerateFlightDataFunction
+    Properties:
+      CodeUri: GenerateFlightDataFunction
+      Handler: bootstrap
+      Runtime: provided.al2
+      Architectures:
+      - arm64
+      Policies:
+      - DynamoDBReadPolicy:
+          TableName:
+            Ref: FlightTrackingDynamoDBTable
+      - DynamoDBWritePolicy:
+          TableName:
+            Ref: FlightTrackingDynamoDBTable
+  GetOneFlightTrackingDataByIdFunction:
+    Type: AWS::Serverless::Function
+    Metadata:
+      BuildMethod: go1.x
+      SamResourceId: GetOneFlightTrackingDataByIdFunction
+    Properties:
+      CodeUri: GetOneFlightTrackingDataByIdFunction
+      Handler: bootstrap
+      Runtime: provided.al2
+      Architectures:
+      - arm64
+      Policies:
+      - DynamoDBReadPolicy:
+          TableName:
+            Ref: FlightTrackingDynamoDBTable
+      - DynamoDBWritePolicy:
+          TableName:
+            Ref: FlightTrackingDynamoDBTable
+  FlightTrackingDynamoDBTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: FlightTrackingDynamoDBTable
+      AttributeDefinitions:
+      - AttributeName: FlightId
+        AttributeType: S
+      KeySchema:
+      - AttributeName: FlightId
+        KeyType: HASH
+      ProvisionedThroughput:
+        ReadCapacityUnits: 5
+        WriteCapacityUnits: 5
+  ReceiveBookingFunction:
+    Type: AWS::Serverless::Function
+    Metadata:
+      BuildMethod: go1.x
+      SamResourceId: ReceiveBookingFunction
+    Properties:
+      CodeUri: ReceiveBookingFunction
+      Handler: bootstrap
+      Runtime: provided.al2
+      Architectures:
+      - arm64
+      Policies:
+      - DynamoDBReadPolicy:
+          TableName:
+            Ref: ReceiveBookingDynamoDBTable
+      - DynamoDBWritePolicy:
+          TableName:
+            Ref: ReceiveBookingDynamoDBTable
+  ReceiveBookingDynamoDBTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: ReceiveBookingDynamoDBTable
+      AttributeDefinitions:
+      - AttributeName: GUID
+        AttributeType: S
+      KeySchema:
+      - AttributeName: GUID
+        KeyType: HASH
+      ProvisionedThroughput:
+        ReadCapacityUnits: 5
+        WriteCapacityUnits: 5
   APIGateway:
     Type: AWS::Serverless::Api
     Properties:
@@ -247,6 +345,58 @@ Resources:
         {background-color: white; color: orange; border: 1px solid orange; font-weight:
         bold;} .submitButton-customizable:hover { background-color: #f4f1ed; color:
         orange; border: 1px solid orange; font-weight: bold;}'
+  ForgetUserFunction:
+    Type: AWS::Serverless::Function
+    Metadata:
+      BuildMethod: go1.x
+      SamResourceId: ForgetUserFunction
+    Properties:
+      FunctionName: ForgetUserFunction
+      CodeUri: ForgetUserFunction
+      Handler: bootstrap
+      Runtime: provided.al2
+      Architectures:
+      - arm64
+      Role:
+        Fn::GetAtt:
+        - ForgetUserFunctionRole
+        - Arn
+  ForgetUserFunctionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service: lambda.amazonaws.com
+          Action: sts:AssumeRole
+      Policies:
+      - PolicyName: LambdaDynamoDBPolicy
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+          - Effect: Allow
+            Action:
+            - logs:CreateLogGroup
+            - logs:CreateLogStream
+            - logs:PutLogEvents
+            Resource: arn:aws:logs:*:*:*
+          - Effect: Allow
+            Action:
+            - cognito-idp:AdminDeleteUser
+            - cognito-idp:GetUser
+            Resource:
+              Fn::GetAtt:
+              - ConnectedAirlinesUserPool
+              - Arn
+          - Effect: Allow
+            Action:
+            - events:PutEvents
+            Resource:
+              Fn::GetAtt:
+              - CustomEventBus
+              - Arn
   APIGatewayPermissionGetBookings:
     Type: AWS::Lambda::Permission
     Properties:
@@ -286,3 +436,18 @@ Resources:
           - GetBookingsFunction
           - Arn
         Id: InvokeGetBookingsFunction
+      - Arn:
+          Fn::GetAtt:
+          - GetFlightTrackingDataFunction
+          - Arn
+        Id: InvokeGetFlightTrackingDataFunction
+      - Arn:
+          Fn::GetAtt:
+          - GenerateFlightDataFunction
+          - Arn
+        Id: InvokeGenerateFlightDataFunction
+      - Arn:
+          Fn::GetAtt:
+          - GetOneFlightTrackingDataByIdFunction
+          - Arn
+        Id: InvokeGetOneFlightTrackingDataByIdFunction
