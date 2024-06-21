@@ -2,80 +2,61 @@ package main
 
 import (
 	"context"
-	"encoding/json"
-	"log"
+	"fmt"
+	"os"
 
+	"github.com/aws/aws-lambda-go/lambda"
+	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/eventbridge"
+	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 )
 
-type Booking struct {
-	BookingID         int    `json:"bookingid"`
-	UserID            int    `json:"userId"`
-	Title             string `json:"flight"`
-	ImageURL          string `json:"imageUrl"`
-	BadgeText         string `json:"badgeText"`
-	DepartureTime     string `json:"departureTime"`
-	ArrivalTime       string `json:"arrivalTime"`
-	Class             string `json:"class"`
-	DepartureAirport  string `json:"departureAirport"`
-	DepartureDateTime string `json:"departureDateTime"`
-	ArrivalAirport    string `json:"arrivalAirport"`
-	ArrivalDateTime   string `json:"arrivalDateTime"`
-	Passengers        []passanger  `json:"passengers"`
-	SeatNumbers       string `json:"seatNumbers"`
-	Airline           string `json:"airline"`
-	Airplane          string `json:"airplane"`
-	Gate              string `json:"gate 1"`
-	Status            string `json:"status"`
-}
 
-type Passenger struct {
-    Title       string `json:"title"`
-    FirstName   string `json:"firstname"`
-    LastName    string `json:"lastname"`
-    PhoneNumber string `json:"phonenumber"`
-    Email       string `json:"email"`
-}
+func HandleRequest(ctx context.Context, event *MyEvent) error {
+	// load config
+	cfg, err := config.LoadDefaultConfig(ctx)
+	if err != nil {
+		return err
+	}
 
-type MyEvent struct {
-	OutboundFlightID int         `json:"OutboundFlightID"`
-    UserID           int         `json:"UserID"`
-    ReturnFlightID   int         `json:"ReturnFlightID"`
-    Passengers       []Passenger `json:"passengers"`
-    SeatNumbers      string      `json:"Seatnumbers"`
-    Class            string      `json:"Class"`
-    ExtraBaggage     int         `json:"ExtraBaggage"`
-}
+	client := dynamodb.NewFromConfig(cfg)
 
-// func createEventBridgeClient() *eventbridge.EventBridge {
-//     // Create a new session with your AWS credentials
-//     sess := session.Must(session.NewSessionWithOptions(session.Options{
-//         SharedConfigState: session.SharedConfigEnable,
-//     }))
-    
-//     // Create an EventBridge client using the session
-//     svc := eventbridge.New(sess)
-    
-//     return svc
-// }
+	passengers := make([]types.AttributeValue, len(event.Passengers))
+	for i, passenger := range event.Passengers {
+		passengers[i] = &types.AttributeValueMemberM{Value: map[string]types.AttributeValue{
+			"title":       &types.AttributeValueMemberS{Value: passenger.Title},
+			"firstname":   &types.AttributeValueMemberS{Value: passenger.FirstName},
+			"lastname":    &types.AttributeValueMemberS{Value: passenger.LastName},
+			"phonenumber": &types.AttributeValueMemberS{Value: passenger.PhoneNumber},
+			"email":       &types.AttributeValueMemberS{Value: passenger.Email},
+		}}
+	}
 
-func HandleRequest(ctx context.Context, event *MyEvent) (response, error) {
-	//recieve event
-	if event == nil {
-        return nil, fmt.Errorf("received nil event")
-    }
+	item := map[string]types.AttributeValue{
+		"OutboundFlightID": &types.AttributeValueMemberN{Value: fmt.Sprintf("%d", event.OutboundFlightID)},
+		"UserID":           &types.AttributeValueMemberN{Value: fmt.Sprintf("%d", event.UserID)},
+		"ReturnFlightID":   &types.AttributeValueMemberN{Value: fmt.Sprintf("%d", event.ReturnFlightID)},
+		"passengers":       &types.AttributeValueMemberL{Value: passengers},
+		"Seatnumbers":      &types.AttributeValueMemberS{Value: event.SeatNumbers},
+		"Class":            &types.AttributeValueMemberS{Value: event.Class},
+		"ExtraBaggage":     &types.AttributeValueMemberN{Value: fmt.Sprintf("%d", event.ExtraBaggage)},
+	}
 
+	// Define input parameters for PutItem operation
+	input := &dynamodb.PutItemInput{
+		TableName: aws.String("BookingDynamoDBTable"),
+		Item:      item,
+	}
 
-	
-	//get flight from other services
-
-	//
-    
-    
-
-	//save booking with new passengers id's 
+	// Perform PutItem operation
+	fmt.Println("inserting flight data")
+	_, err = client.PutItem(context.Background(), input)
+	if err != nil {
+		fmt.Println("Error putting item to DynamoDB:", err)
+		os.Exit(1)
+	}
+	return nil
 	
 }
 
