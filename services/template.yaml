@@ -142,7 +142,7 @@ Resources:
     Metadata:
       BuildMethod: go1.x
     Properties:
-      CodeUri: flight-tracking/functions/FlighttrackingById/ 
+      CodeUri: flight-tracking/functions/FlightTrackingById/ 
       Handler: bootstrap
       Runtime: provided.al2
       Architectures: [arm64]
@@ -166,7 +166,36 @@ Resources:
         ReadCapacityUnits: 5
         WriteCapacityUnits: 5
 
-  
+  ReceiveBookingFunction:
+    Type: AWS::Serverless::Function
+    Metadata:
+      BuildMethod: go1.x
+    Properties:
+      CodeUri: external/functions/ReceiveBooking/ 
+      Handler: bootstrap
+      Runtime: provided.al2
+      Architectures: [arm64]
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName: !Ref ReceiveBookingDynamoDBTable
+        - DynamoDBWritePolicy:
+            TableName: !Ref ReceiveBookingDynamoDBTable
+ 
+  ReceiveBookingDynamoDBTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: "ReceiveBookingDynamoDBTable"
+      AttributeDefinitions:
+        - AttributeName: "GUID"
+          AttributeType: "S"
+      KeySchema:
+        - AttributeName: "GUID"
+          KeyType: "HASH"
+      ProvisionedThroughput:
+        ReadCapacityUnits: 5
+        WriteCapacityUnits: 5
+
+
   APIGateway:
     Type: AWS::Serverless::Api
     Properties:
@@ -200,7 +229,48 @@ Resources:
                   type: aws
                   httpMethod: POST
                   uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${GetBookingsFunction.Arn}/invocations"
-
+  
+  ExternalAPIGateway:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: Prod
+      DefinitionBody:
+        swagger: "2.0"
+        info:
+          title: "ExternalAPIGateway"
+        paths:
+            /postFlight:
+              post:
+                consumes:
+                  - application/json
+                produces:
+                  - application/json
+                parameters: []
+                responses: {}
+                x-amazon-apigateway-integration:
+                  type: aws
+                  httpMethod: POST
+                  uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${SearchFlightFunction.Arn}/invocations"
+            /flightPosted:
+              post:
+                consumes:
+                  - application/json
+                produces:
+                  - application/json
+                parameters: []
+                responses: {}
+                x-amazon-apigateway-integration:
+                  type: aws
+                  httpMethod: POST
+                  uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${SearchFlightFunction.Arn}/invocations"
+            
+  ApiKey:
+    Type: AWS::ApiGateway::ApiKey
+    Properties: 
+      Description: "API key for other connectedairlines group"
+      Name: 'ExternalConnectedAirlineKey'
+      Enabled: True
+  
   ConnectedAirlinesUserPool:
     Type: AWS::Cognito::UserPool
     Properties:
@@ -245,6 +315,57 @@ Resources:
         - email
         - openid
 
+  UserPoolUICustomization: 
+    Type: AWS::Cognito::UserPoolUICustomizationAttachment 
+    Properties: 
+      UserPoolId: !Ref ConnectedAirlinesUserPool
+      ClientId: !Ref ConnectedAirlinesUserClient 
+      CSS: ".banner-customizable {background: orange;} .submitButton-customizable {background-color: white; color: orange; border: 1px solid orange; font-weight: bold;} .submitButton-customizable:hover { background-color: #f4f1ed; color: orange; border: 1px solid orange; font-weight: bold;}"
+
+
+  ForgetUserFunction:
+    Type: 'AWS::Serverless::Function'
+    Metadata:
+      BuildMethod: go1.x
+    Properties:
+      FunctionName: ForgetUserFunction
+      CodeUri: user/ForgetUser/
+      Handler: bootstrap
+      Runtime: provided.al2
+      Architectures: [arm64]
+      Role: !GetAtt ForgetUserFunctionRole.Arn 
+
+  ForgetUserFunctionRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: 'Allow'
+            Principal:
+              Service: 'lambda.amazonaws.com'
+            Action: 'sts:AssumeRole'
+      Policies:
+        - PolicyName: 'LambdaDynamoDBPolicy'
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: 'Allow'
+                Action:
+                  - 'logs:CreateLogGroup'
+                  - 'logs:CreateLogStream'
+                  - 'logs:PutLogEvents'
+                Resource: 'arn:aws:logs:*:*:*'
+              - Effect: 'Allow'
+                Action:
+                  - cognito-idp:AdminDeleteUser
+                  - cognito-idp:GetUser
+                Resource: !GetAtt ConnectedAirlinesUserPool.Arn
+              - Effect: 'Allow'
+                Action:
+                  - events:PutEvents
+                Resource: !GetAtt CustomEventBus.Arn
+
   APIGatewayPermissionGetBookings:
     Type: AWS::Lambda::Permission
     Properties:
@@ -277,6 +398,6 @@ Resources:
           Id: "InvokeGetFlightTrackingDataFunction"
         - Arn: !GetAtt GenerateFlightDataFunction.Arn
           Id: "InvokeGenerateFlightDataFunction"
-        - Arn: !GetAtt GetOneFlightTrackingDataById.Arn
-          Id: "InvokeGetOneFlightTrackingDataById"
+        - Arn: !GetAtt GetOneFlightTrackingDataByIdFunction.Arn
+          Id: "InvokeGetOneFlightTrackingDataByIdFunction"
           
