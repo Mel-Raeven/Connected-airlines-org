@@ -2,8 +2,27 @@
 
 This project is created to maintain the Connected airlines project for semester 6 @Fontys.
 
+---
 
-# AWS Live deployment
+# Project stack
+
+This project contains the following tech stack
+- React, Mantine
+- GoLang
+- AWS
+- SAM
+
+---
+
+# Run the frontend
+To run the frontend, simply run:
+```
+npm run dev
+```
+
+---
+
+# AWS Live deployment of the backend
 
 ## build
 
@@ -19,26 +38,18 @@ sam deploy --guided
 
 ---
 
-# Local deployment
+# Local testing of the backend
 
-```bash
-docker-compose up
+## Build scripts
+Note that the entire backend can only be ran in AWS. However, you can still build the GO files individually to see if they can be built. To buil the GO files:
+
+1. Go to a directory containing a file.go
+2. run: `go build .`
+
+## Run Lambda locally
+You can also do a little trick with Lambda's to run them locally. When you add the Lambda to the CloudFormation template.yaml file you can run that lambda using this command:
+```
+sam local invoke "NameOfTheFunctionInTheTemplate" -e path/to/file/containing/event
 ```
 
-By now localstack is running and shoud give a container id in the logs.
-
-Change the container id and run the following command:
-
-```bash
-docker exec -it <container id> bash
-```
-
-This should put you in the docker containers CLI. Now run the following command:
-
-```bash
-cd /services/services
-
-awslocal cloudformation deploy --stack-name dockerStack --template-file "template.yaml"
-```
-
-After localstack finishes, visit the localstack dashboard and see the stack created in cloudformation. 
+SAM will then build the Lambda in a container on your PC and eject an event into it.
