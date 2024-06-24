@@ -218,7 +218,7 @@ Resources:
                   httpMethod: POST
                   uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${SearchFlightFunction.Arn}/invocations"
             /getBookings:
-              post:
+              get:
                 consumes:
                   - application/json
                 produces:
@@ -227,9 +227,44 @@ Resources:
                 responses: {}
                 x-amazon-apigateway-integration:
                   type: aws
-                  httpMethod: POST
+                  httpMethod: GET
                   uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${GetBookingsFunction.Arn}/invocations"
-  
+            /getFlightTracking:
+              get:
+                consumes:
+                  - application/json
+                produces:
+                  - application/json
+                parameters: []
+                responses: {}
+                x-amazon-apigateway-integration:
+                  type: aws
+                  httpMethod: GET
+                  uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${GetFlightTrackingDataFunction.Arn}/invocations"
+            /getFlightTrackingById:
+              get:
+                consumes:
+                  - application/json
+                produces:
+                  - application/json
+                parameters: []
+                responses: {}
+                x-amazon-apigateway-integration:
+                  type: aws
+                  httpMethod: GET
+                  uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${GetOneFlightTrackingDataByIdFunction.Arn}/invocations"
+            /generateFlightTracking:
+              get:
+                consumes:
+                  - application/json
+                produces:
+                  - application/json
+                parameters: []
+                responses: {}
+                x-amazon-apigateway-integration:
+                  type: aws
+                  httpMethod: GET
+                  uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${GenerateFlightDataFunction.Arn}/invocations"
   ExternalAPIGateway:
     Type: AWS::Serverless::Api
     Properties:
@@ -250,7 +285,7 @@ Resources:
                 x-amazon-apigateway-integration:
                   type: aws
                   httpMethod: POST
-                  uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${SearchFlightFunction.Arn}/invocations"
+                  uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ReceiveBookingFunction.Arn}/invocations"
             /flightPosted:
               post:
                 consumes:
@@ -262,7 +297,7 @@ Resources:
                 x-amazon-apigateway-integration:
                   type: aws
                   httpMethod: POST
-                  uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${SearchFlightFunction.Arn}/invocations"
+                  uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ReceiveBookingFunction.Arn}/invocations"
             
   ApiKey:
     Type: AWS::ApiGateway::ApiKey
@@ -400,4 +435,6 @@ Resources:
           Id: "InvokeGenerateFlightDataFunction"
         - Arn: !GetAtt GetOneFlightTrackingDataByIdFunction.Arn
           Id: "InvokeGetOneFlightTrackingDataByIdFunction"
+        - Arn: !GetAtt ReceiveBookingFunction.Arn
+          Id: "ReceiveBookingFunction"
           
