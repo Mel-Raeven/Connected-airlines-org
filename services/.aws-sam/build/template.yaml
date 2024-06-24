@@ -1,0 +1,453 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Resources:
+  CustomEventBus:
+    Type: AWS::Events::EventBus
+    Properties:
+      Name: CustomEventBus
+  GetBookingsFunction:
+    Type: AWS::Serverless::Function
+    Metadata:
+      BuildMethod: go1.x
+      SamResourceId: GetBookingsFunction
+    Properties:
+      Role:
+        Fn::GetAtt:
+        - GetBookingsExecutionRole
+        - Arn
+      CodeUri: GetBookingsFunction
+      Handler: bootstrap
+      Runtime: provided.al2
+      Architectures:
+      - arm64
+      Policies:
+      - DynamoDBReadPolicy:
+          TableName:
+            Ref: BookingDynamoDBTable
+      - DynamoDBWritePolicy:
+          TableName:
+            Ref: BookingDynamoDBTable
+  GetBookingsExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service: lambda.amazonaws.com
+          Action: sts:AssumeRole
+      Policies:
+      - PolicyName: LambdaDynamoDBPolicy
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+          - Effect: Allow
+            Action:
+            - logs:CreateLogGroup
+            - logs:CreateLogStream
+            - logs:PutLogEvents
+            Resource: arn:aws:logs:*:*:*
+          - Effect: Allow
+            Action:
+            - dynamodb:Scan
+            Resource:
+            - Fn::GetAtt:
+              - BookingDynamoDBTable
+              - Arn
+  BookingDynamoDBTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: BookingDynamoDBTable
+      AttributeDefinitions:
+      - AttributeName: BookingID
+        AttributeType: N
+      KeySchema:
+      - AttributeName: BookingID
+        KeyType: HASH
+      ProvisionedThroughput:
+        ReadCapacityUnits: 5
+        WriteCapacityUnits: 5
+  SearchFlightFunction:
+    Type: AWS::Serverless::Function
+    Metadata:
+      BuildMethod: go1.x
+      SamResourceId: SearchFlightFunction
+    Properties:
+      CodeUri: SearchFlightFunction
+      Handler: bootstrap
+      Runtime: provided.al2
+      Architectures:
+      - arm64
+      Policies:
+      - DynamoDBReadPolicy:
+          TableName:
+            Ref: FlightManagementDynamoDBTable
+      - DynamoDBWritePolicy:
+          TableName:
+            Ref: FlightManagementDynamoDBTable
+  BookingCRUD:
+    Type: AWS::Serverless::Function
+    Metadata:
+      BuildMethod: go1.x
+      SamResourceId: BookingCRUD
+    Properties:
+      CodeUri: BookingCRUD
+      Handler: bootstrap
+      Runtime: provided.al2
+      Architectures:
+      - arm64
+      Policies:
+      - DynamoDBReadPolicy:
+          TableName:
+            Ref: FlightManagementDynamoDBTable
+      - DynamoDBWritePolicy:
+          TableName:
+            Ref: FlightManagementDynamoDBTable
+  FlightManagementDynamoDBTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: FlightManagementDynamoDBTable
+      AttributeDefinitions:
+      - AttributeName: FlightId
+        AttributeType: S
+      KeySchema:
+      - AttributeName: FlightId
+        KeyType: HASH
+      ProvisionedThroughput:
+        ReadCapacityUnits: 5
+        WriteCapacityUnits: 5
+  GetFlightTrackingDataFunction:
+    Type: AWS::Serverless::Function
+    Metadata:
+      BuildMethod: go1.x
+      SamResourceId: GetFlightTrackingDataFunction
+    Properties:
+      CodeUri: GetFlightTrackingDataFunction
+      Handler: bootstrap
+      Runtime: provided.al2
+      Architectures:
+      - arm64
+      Policies:
+      - DynamoDBReadPolicy:
+          TableName:
+            Ref: FlightTrackingDynamoDBTable
+      - DynamoDBWritePolicy:
+          TableName:
+            Ref: FlightTrackingDynamoDBTable
+  GenerateFlightDataFunction:
+    Type: AWS::Serverless::Function
+    Metadata:
+      BuildMethod: go1.x
+      SamResourceId: GenerateFlightDataFunction
+    Properties:
+      CodeUri: GenerateFlightDataFunction
+      Handler: bootstrap
+      Runtime: provided.al2
+      Architectures:
+      - arm64
+      Policies:
+      - DynamoDBReadPolicy:
+          TableName:
+            Ref: FlightTrackingDynamoDBTable
+      - DynamoDBWritePolicy:
+          TableName:
+            Ref: FlightTrackingDynamoDBTable
+  GetOneFlightTrackingDataByIdFunction:
+    Type: AWS::Serverless::Function
+    Metadata:
+      BuildMethod: go1.x
+      SamResourceId: GetOneFlightTrackingDataByIdFunction
+    Properties:
+      CodeUri: GetOneFlightTrackingDataByIdFunction
+      Handler: bootstrap
+      Runtime: provided.al2
+      Architectures:
+      - arm64
+      Policies:
+      - DynamoDBReadPolicy:
+          TableName:
+            Ref: FlightTrackingDynamoDBTable
+      - DynamoDBWritePolicy:
+          TableName:
+            Ref: FlightTrackingDynamoDBTable
+  FlightTrackingDynamoDBTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: FlightTrackingDynamoDBTable
+      AttributeDefinitions:
+      - AttributeName: FlightId
+        AttributeType: S
+      KeySchema:
+      - AttributeName: FlightId
+        KeyType: HASH
+      ProvisionedThroughput:
+        ReadCapacityUnits: 5
+        WriteCapacityUnits: 5
+  ReceiveBookingFunction:
+    Type: AWS::Serverless::Function
+    Metadata:
+      BuildMethod: go1.x
+      SamResourceId: ReceiveBookingFunction
+    Properties:
+      CodeUri: ReceiveBookingFunction
+      Handler: bootstrap
+      Runtime: provided.al2
+      Architectures:
+      - arm64
+      Policies:
+      - DynamoDBReadPolicy:
+          TableName:
+            Ref: ReceiveBookingDynamoDBTable
+      - DynamoDBWritePolicy:
+          TableName:
+            Ref: ReceiveBookingDynamoDBTable
+  ReceiveBookingDynamoDBTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: ReceiveBookingDynamoDBTable
+      AttributeDefinitions:
+      - AttributeName: GUID
+        AttributeType: S
+      KeySchema:
+      - AttributeName: GUID
+        KeyType: HASH
+      ProvisionedThroughput:
+        ReadCapacityUnits: 5
+        WriteCapacityUnits: 5
+  APIGateway:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: Prod
+      DefinitionBody:
+        swagger: '2.0'
+        info:
+          title: APIGateway
+        paths:
+          /searchFlight:
+            post:
+              consumes:
+              - application/json
+              produces:
+              - application/json
+              parameters: []
+              responses: {}
+              x-amazon-apigateway-integration:
+                type: aws
+                httpMethod: POST
+                uri:
+                  Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${SearchFlightFunction.Arn}/invocations
+          /getBookings:
+            post:
+              consumes:
+              - application/json
+              produces:
+              - application/json
+              parameters: []
+              responses: {}
+              x-amazon-apigateway-integration:
+                type: aws
+                httpMethod: POST
+                uri:
+                  Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${GetBookingsFunction.Arn}/invocations
+  ExternalAPIGateway:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: Prod
+      DefinitionBody:
+        swagger: '2.0'
+        info:
+          title: ExternalAPIGateway
+        paths:
+          /postFlight:
+            post:
+              consumes:
+              - application/json
+              produces:
+              - application/json
+              parameters: []
+              responses: {}
+              x-amazon-apigateway-integration:
+                type: aws
+                httpMethod: POST
+                uri:
+                  Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${SearchFlightFunction.Arn}/invocations
+          /flightPosted:
+            post:
+              consumes:
+              - application/json
+              produces:
+              - application/json
+              parameters: []
+              responses: {}
+              x-amazon-apigateway-integration:
+                type: aws
+                httpMethod: POST
+                uri:
+                  Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${SearchFlightFunction.Arn}/invocations
+  ApiKey:
+    Type: AWS::ApiGateway::ApiKey
+    Properties:
+      Description: API key for other connectedairlines group
+      Name: ExternalConnectedAirlineKey
+      Enabled: true
+  ConnectedAirlinesUserPool:
+    Type: AWS::Cognito::UserPool
+    Properties:
+      UserPoolName: ConnectedAirlinesUserPool
+      Policies:
+        PasswordPolicy:
+          RequireLowercase: true
+          RequireSymbols: false
+          RequireNumbers: true
+          MinimumLength: '8'
+          RequireUppercase: true
+      UsernameAttributes:
+      - email
+      Schema:
+      - AttributeDataType: String
+        Name: email
+        Required: false
+      AutoVerifiedAttributes:
+      - email
+  ConnectedAirlinesUserPoolDomain:
+    Type: AWS::Cognito::UserPoolDomain
+    Properties:
+      UserPoolId:
+        Ref: ConnectedAirlinesUserPool
+      Domain: connectedairlines
+  ConnectedAirlinesUserClient:
+    Type: AWS::Cognito::UserPoolClient
+    Properties:
+      UserPoolId:
+        Ref: ConnectedAirlinesUserPool
+      ClientName: ConnectedAirlinesUserClient
+      GenerateSecret: false
+      AllowedOAuthFlowsUserPoolClient: true
+      AllowedOAuthFlows:
+      - code
+      CallbackURLs:
+      - https://dev.d3vyzw80s24mm5.amplifyapp.com/Home
+      SupportedIdentityProviders:
+      - COGNITO
+      AllowedOAuthScopes:
+      - phone
+      - email
+      - openid
+  UserPoolUICustomization:
+    Type: AWS::Cognito::UserPoolUICustomizationAttachment
+    Properties:
+      UserPoolId:
+        Ref: ConnectedAirlinesUserPool
+      ClientId:
+        Ref: ConnectedAirlinesUserClient
+      CSS: '.banner-customizable {background: orange;} .submitButton-customizable
+        {background-color: white; color: orange; border: 1px solid orange; font-weight:
+        bold;} .submitButton-customizable:hover { background-color: #f4f1ed; color:
+        orange; border: 1px solid orange; font-weight: bold;}'
+  ForgetUserFunction:
+    Type: AWS::Serverless::Function
+    Metadata:
+      BuildMethod: go1.x
+      SamResourceId: ForgetUserFunction
+    Properties:
+      FunctionName: ForgetUserFunction
+      CodeUri: ForgetUserFunction
+      Handler: bootstrap
+      Runtime: provided.al2
+      Architectures:
+      - arm64
+      Role:
+        Fn::GetAtt:
+        - ForgetUserFunctionRole
+        - Arn
+  ForgetUserFunctionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service: lambda.amazonaws.com
+          Action: sts:AssumeRole
+      Policies:
+      - PolicyName: LambdaDynamoDBPolicy
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+          - Effect: Allow
+            Action:
+            - logs:CreateLogGroup
+            - logs:CreateLogStream
+            - logs:PutLogEvents
+            Resource: arn:aws:logs:*:*:*
+          - Effect: Allow
+            Action:
+            - cognito-idp:AdminDeleteUser
+            - cognito-idp:GetUser
+            Resource:
+              Fn::GetAtt:
+              - ConnectedAirlinesUserPool
+              - Arn
+          - Effect: Allow
+            Action:
+            - events:PutEvents
+            Resource:
+              Fn::GetAtt:
+              - CustomEventBus
+              - Arn
+  APIGatewayPermissionGetBookings:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName:
+        Fn::GetAtt:
+        - GetBookingsFunction
+        - Arn
+      Principal: apigateway.amazonaws.com
+  APIGatewayPermissionSearchFlight:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName:
+        Fn::GetAtt:
+        - SearchFlightFunction
+        - Arn
+      Principal: apigateway.amazonaws.com
+  EventRule:
+    Type: AWS::Events::Rule
+    Properties:
+      EventBusName:
+        Ref: CustomEventBus
+      EventPattern:
+        source:
+        - api.gateway
+        detail-type:
+        - API Gateway Request
+      Targets:
+      - Arn:
+          Fn::GetAtt:
+          - SearchFlightFunction
+          - Arn
+        Id: InvokeSearchFlightFunction
+      - Arn:
+          Fn::GetAtt:
+          - GetBookingsFunction
+          - Arn
+        Id: InvokeGetBookingsFunction
+      - Arn:
+          Fn::GetAtt:
+          - GetFlightTrackingDataFunction
+          - Arn
+        Id: InvokeGetFlightTrackingDataFunction
+      - Arn:
+          Fn::GetAtt:
+          - GenerateFlightDataFunction
+          - Arn
+        Id: InvokeGenerateFlightDataFunction
+      - Arn:
+          Fn::GetAtt:
+          - GetOneFlightTrackingDataByIdFunction
+          - Arn
+        Id: InvokeGetOneFlightTrackingDataByIdFunction
